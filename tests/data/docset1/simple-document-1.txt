@@ -1,0 +1,11 @@
+Simple Document
+Dec 18, 2022
+
+There are tradeoffs between precision and recall as well as sensitivity and specificity.
+
+Recall and sensitivity are mathematically equivalent. 
+
+Thus, the two tradeoffs differ, and the choice between them may introduce bias.
+
+Fairness typically refers to equality and/or equity as a type of distributive justice. Utilitarianism is a different theory of justice.
+

@@ -1,0 +1,10 @@
+﻿Performance Metrics,Data Ethics,Ethical Principles
+precision,bias,beneficience
+recall,fairness,nonmaleficence
+sensitivity,transparency,do good
+specificity,accountability,do no harm
+F1,,non-maleficence
+accuracy,,justice
+,,respect for autonomy
+,,patient autonomy
+,,autonomy
