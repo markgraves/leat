@@ -14,7 +14,7 @@ class LocalFileSys(BaseFileSys):
     ):
         self.datadirs: List["LocalDirectory"] = []
         if directories is not None:
-            if type(directories) == str:
+            if type(directories) == str or isinstance(directories, Path):
                 directories = [directories]
             self.add_directories(
                 directories, recursive=recursive if recursive is not None else True

@@ -70,7 +70,7 @@ def test_read_csv():
     assert cd.data == BASIC_SEARCH_1
 
 
-def test_read_excel(tmpdir):
+def test_read_excel():
     test_file = TEST_DATA_DIRECTORY / "Basic-Search-2.xlsx"
     assert test_file.exists()
     cd = ConfigData(
@@ -81,9 +81,9 @@ def test_read_excel(tmpdir):
     )
     assert cd.data == BASIC_SEARCH_2
 
-def test_read_write_json(tmpdir):
+def test_read_write_json(tmp_path):
     test_file = TEST_DATA_DIRECTORY / "Basic-Search-2.xlsx"
-    temp_json = Path(tmpdir) / "temp.json"
+    temp_json = tmp_path / "temp.json"
     assert test_file.exists()
     cd = ConfigData(
         test_file,
@@ -100,9 +100,9 @@ def test_read_write_json(tmpdir):
     assert cd3.data == BASIC_SEARCH_2
    
 
-def test_init_args(tmpdir):
+def test_init_args(tmp_path):
     test_file = TEST_DATA_DIRECTORY / "Basic-Search-2.xlsx"
-    temp_json = Path(tmpdir) / "temp.json"
+    temp_json = tmp_path / "temp.json"
     assert test_file.exists()
     cd = ConfigData(
         test_file,
