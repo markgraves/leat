@@ -1,0 +1,48 @@
+{
+    "Basic Search": {
+        "_sheet_type": "SEARCH",
+        "Performance Metrics": [
+            "precision",
+            "recall",
+            "sensitivity",
+            "specificity",
+            "F1",
+            "accuracy"
+        ],
+        "Data Ethics": [
+            "bias",
+            "fairness",
+            "transparency",
+            "accountability"
+        ],
+        "Ethical Principles": [
+            "beneficience",
+            "nonmaleficence",
+            "do good",
+            "do no harm",
+            "non-maleficence",
+            "justice",
+            "respect for autonomy",
+            "patient autonomy",
+            "autonomy"
+        ]
+    },
+    "Patterns": {
+        "_sheet_type": "PATTERN",
+        "Data Ethics": {
+            "2": [
+                "\\bequit"
+            ]
+        },
+        "Test": {
+            "2": [
+                "\\b\\d\\d\\d\\d\\b"
+            ],
+            "0": [
+                "WHO",
+                "MAR",
+                "Sen"
+            ]
+        }
+    }
+}
