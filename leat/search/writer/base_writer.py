@@ -16,8 +16,8 @@ class BaseWriter(ABC):
         "Write document result"
         raise NotImplementedError()
 
-class SpanScheme():
 
+class SpanScheme:
     def __init__(self, start_pad=None, end_pad=None, **kwargs):
         self.start_pad = start_pad
         self.end_pad = end_pad

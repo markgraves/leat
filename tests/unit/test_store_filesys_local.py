@@ -67,7 +67,9 @@ def test_get_files_subdir(tmp_path):
 def test_get_files_exclude(tmp_path):
     init_filesys(tmp_path)
     test_fs4 = LocalFileSys()
-    test_fs4.add_directory(tmp_path / "a", recursive=True, exclude=["d1", "d1/*", "d1/**/*"])
+    test_fs4.add_directory(
+        tmp_path / "a", recursive=True, exclude=["d1", "d1/*", "d1/**/*"]
+    )
     assert test_fs4.get_files() == [
         PosixPath(tmp_path / "a/b"),
         PosixPath(tmp_path / "a/b/c1"),
