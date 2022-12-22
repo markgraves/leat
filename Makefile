@@ -19,7 +19,6 @@ format: black
 lint:   check-black mypy
 
 mypy:
-	python -m mypy leat/core
 	python -m mypy leat/store
 	python -m mypy leat/search
 
