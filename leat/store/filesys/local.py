@@ -23,7 +23,8 @@ class LocalFileSys(BaseFileSys):
     def add_directory(
         self,
         directory,
-        include: Union[str | Sequence[str]] = "*",
+        #        include: Union[str | Sequence[str]] = "*",  # python 3.10+
+        include="*",
         exclude: Optional[Sequence] = None,
         recursive: bool = True,
     ):
