@@ -70,7 +70,7 @@ class HTMLWriter(BaseWriter):
             else:
                 base_color = None
             self.write_clean_text(item.doc.text[current_index:indx])
-            self.write_tag("span", close=True, newline=True)
+            self.write_tag("span", close=True)
             for mr in d.get("e", []):
                 self.write_tag(
                     "span",
@@ -100,7 +100,7 @@ class HTMLWriter(BaseWriter):
                     print("INTERNAL ERROR")
                 self.write_tag(
                     "span",
-                    tag_args={"style": "color:" + color, "title": "; ".join(tooltip)},
+                    tag_args={"style": "background-color:" + color, "title": "; ".join(tooltip)},
                 )
             else:
                 self.write_tag("span")
@@ -154,7 +154,7 @@ class HTMLWriter(BaseWriter):
         self.stream.write(text)
 
 
-def mix_hex_color_strings(color_a, color_b=None, t=0.5, gamma=2):
+def mix_hex_color_strings(color_a, color_b=None, t=0.5, gamma=2.2):
     "Mix two hex colors"
     # See https://stackoverflow.com/questions/726549/algorithm-for-additive-color-mixing-for-rgb-values
     def hex_to_float(h):
