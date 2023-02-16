@@ -1,6 +1,8 @@
 """Delegate writer code for match result"""
 
 from abc import ABC
+from collections import Counter
+import html
 
 from .colors import mix_hex_color_strings
 
@@ -38,13 +40,22 @@ class HTMLInlineSpanDelegate(BaseWriterDelegate):
 
     def __init__(self, writer):
         self.writer = writer
+        self.collapse_section = True
 
-    def start_section(self):
+    def start_section(self, match_results=None):
+        "Write tags to start section, and maybe summarize match_results"
         self.writer.write_tag("div", newline=True)
+        if self.collapse_section and match_results is not None:
+            self.writer.write_tag("details")
+            self.writer.write_tag("summary")
+            self.writer.write(self.summarize_results(match_results, html_output=True))
+            self.writer.write_tag("summary", close=True)
         self.writer.write_tag("span")
 
     def end_section(self):
         self.writer.write_tag("span", close=True)
+        if self.collapse_section:
+            self.writer.write_tag("details", close=True)
         self.writer.write_tag("div", close=True, newline=True)
 
     def init_span(self):
@@ -100,3 +111,24 @@ class HTMLInlineSpanDelegate(BaseWriterDelegate):
 
     def write_span_end(self):
         self.writer.write_tag("span", close=True)
+
+    def summarize_results(
+        self, match_results, html_output=False, max_num_concepts=7
+    ) -> str:
+        "Summarize a collection of match results"
+
+        def decorate(concept):
+            if html_output:
+                color = self.writer.concept_colors.get(
+                    concept, self.writer.default_span_color
+                )
+                return f'<u style="color: {color}">' + html.escape(concept) + "</u>"
+            else:
+                return concept
+
+        concept_counter = Counter(mr.pattern.concept for mr in match_results)
+        most_common = Counter(dict(concept_counter.most_common(max_num_concepts)))
+        result = "; ".join(f"{decorate(k)}({v})" for k, v in most_common.items())
+        if most_common.total() < len(match_results):
+            result += f";... ; total({len(match_results)})"
+        return result

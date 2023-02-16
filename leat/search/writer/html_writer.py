@@ -51,7 +51,7 @@ class HTMLWriter(BaseWriter):
         end = item.end(pad=self.end_pad)
         # Sweep spans
         sweepd = DocResult.line_sweep_spans(item.results)
-        self.delegate.start_section()
+        self.delegate.start_section(item.results)
         current_index = start
         # span_stack = []
         for indx, d in sweepd.items():
