@@ -11,6 +11,7 @@ TEST_DATA_DIRECTORY = Path(__file__).parent.parent / "data"
 
 CONFIG_FILE = TEST_DATA_DIRECTORY / "config" / "Test-Search-Overlapping-Spans.json"
 DOC_FILE = TEST_DATA_DIRECTORY / "docset1" / "simple-document-1.txt"
+RESULT_1 = TEST_DATA_DIRECTORY / "results" / "simple-document-1-html-writer.html"
 
 COLOR_SCHEME = {
     "concept_colors": {
@@ -61,3 +62,13 @@ def test_html_writer():
         '<span style="background-color:#ea8752" title="Performance Metrics; First 7; First 10; Second 5">l</span>'
         in html
     )
+
+def test_html_writer_exact():
+    results = load_results()
+    results.doc.name = results.doc.name.stem
+    with open(RESULT_1, 'r') as ifp:
+        comparison_doc = ifp.read()
+    w = HTMLWriter(start_pad=10, end_pad=15, scheme=COLOR_SCHEME)
+    w.write_doc_result(results)
+    html = w.stream.getvalue()
+    assert comparison_doc == html
