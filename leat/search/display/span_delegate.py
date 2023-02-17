@@ -41,12 +41,37 @@ class HTMLInlineSpanDelegate(BaseWriterDelegate):
     def __init__(self, writer):
         self.writer = writer
         self.collapse_section = True
+        self.collapse_section_default_open = True
+        self.collapse_document = True
+
+    def start_doc(self, name, match_results=None, html_output=True):
+        self.writer.write_tag("div", newline=True)
+        self.writer.write(name)
+        self.writer.write_line()
+        if self.collapse_document:
+            self.writer.write_tag("details")
+        if match_results is not None:
+            self.writer.write_tag("summary")
+            self.writer.write(
+                self.summarize_results(
+                    match_results, html_output=True, max_num_concepts=9
+                )
+            )
+            self.writer.write_tag("summary", close=True)
+
+    def end_doc(self):
+        if self.collapse_document:
+            self.writer.write_tag("details", close=True)
+        self.writer.write_tag("div", close=True, newline=True)
 
     def start_section(self, match_results=None):
         "Write tags to start section, and maybe summarize match_results"
         self.writer.write_tag("div", newline=True)
         if self.collapse_section and match_results is not None:
-            self.writer.write_tag("details")
+            if self.collapse_section_default_open:
+                self.writer.write("<details open>")
+            else:
+                self.writer.write_tag("details")
             self.writer.write_tag("summary")
             self.writer.write(self.summarize_results(match_results, html_output=True))
             self.writer.write_tag("summary", close=True)

@@ -40,8 +40,7 @@ class HTMLWriter(BaseWriter):
 
     def write_doc_result(self, item: DocResult):
         "Write document result"
-        self.write(str(item.doc.name))
-        self.write_line()
+        self.delegate.start_doc(str(item.doc.name), item.all_results())
         for sect_result in item.sect_results:
             self.write_doc_section_result(sect_result)
 
