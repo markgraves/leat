@@ -11,6 +11,12 @@ from ..display import HTMLInlineSpanDelegate
 
 DEFAULT_SPAN_COLOR = "#F1E740"  # dark yellow
 
+DEFAULT_WRITER_OPTIONS = {
+    # should have values for all possible keys, even if None, to simplify access
+    "pretty_html": True,  # True for debugging
+    "include_doc_name": True,  # Include doc name in output
+}
+
 
 class HTMLWriter(BaseWriter):
     "Base Reader to write document results as html"
@@ -33,11 +39,14 @@ class HTMLWriter(BaseWriter):
             self.scheme = SpanScheme(start_pad=start_pad, end_pad=end_pad)
         self.start_pad = start_pad if start_pad is not None else self.scheme.start_pad
         self.end_pad = end_pad if start_pad is not None else self.scheme.end_pad
-        self.pretty_html = self.scheme.get("pretty_html", True)  # True for debugging
-        self.delegate = HTMLInlineSpanDelegate(self)
         self.concept_colors = self.scheme.get("concept_colors", {})
         self.default_span_color = DEFAULT_SPAN_COLOR
+        self.writer_options = {
+            **DEFAULT_WRITER_OPTIONS,
+            **self.scheme.get("writer_options", {}),
+        }
         self.include_doc_name = self.scheme.get("include_doc_name", True)
+        self.delegate = HTMLInlineSpanDelegate(self)
 
     def write_doc_result(self, item: DocResult):
         "Write document result"
@@ -82,7 +91,7 @@ class HTMLWriter(BaseWriter):
 
     def write_clean_text(self, text: str):
         "Clean and write text"
-        if self.pretty_html:
+        if self.writer_options["pretty_html"]:
             text = (
                 text.replace("\n", " ")
                 .replace("\r", " ")

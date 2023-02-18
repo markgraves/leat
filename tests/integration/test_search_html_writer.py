@@ -11,7 +11,7 @@ TEST_DATA_DIRECTORY = Path(__file__).parent.parent / "data"
 
 CONFIG_FILE = TEST_DATA_DIRECTORY / "config" / "Test-Search-Overlapping-Spans.json"
 DOC_FILE = TEST_DATA_DIRECTORY / "docset1" / "simple-document-1.txt"
-RESULT_1 = TEST_DATA_DIRECTORY / "results" / "simple-document-1-html-writer.html"
+RESULT_1 = TEST_DATA_DIRECTORY / "ref-results" / "simple-document-1-html-writer.html"
 
 COLOR_SCHEME = {
     "concept_colors": {

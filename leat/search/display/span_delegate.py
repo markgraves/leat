@@ -40,19 +40,24 @@ class HTMLInlineSpanDelegate(BaseWriterDelegate):
 
     def __init__(self, writer):
         self.writer = writer
-        self.collapse_section = True
-        self.collapse_section_default_open = True
-        self.collapse_document = True
-        if self.collapse_document:
-            self.tag_args_document_details = {"style": "margin-left: 2em;"}
-            self.tag_args_document_summary = {"style": "margin-left: -2em;"}
-        else:
-            self.tag_args_document_details = {}
-            self.tag_args_document_summary = {}
+        wopts = self.writer.writer_options
+        self.collapse_section = wopts.get("collapse_section", True)
+        self.collapse_section_default_open = wopts.get(
+            "collapse_section_default_open", True
+        )
+        self.collapse_document = wopts.get("collapse_document", True)
+        self.tag_args_document_details = {
+            "style": "margin-left: 2em;",
+            **wopts.get("tag_args_document_details", {}),
+        }
+        self.tag_args_document_summary = {
+            "style": "margin-left: -2em;",
+            **wopts.get("tag_args_document_summary", {}),
+        }
 
     def start_doc(self, name, match_results=None, html_output=True):
         self.writer.write_tag("div", newline=True)
-        if self.writer.include_doc_name:
+        if self.writer.writer_options["include_doc_name"]:
             self.writer.write(name)
             self.writer.write_line()
         if self.collapse_document:
