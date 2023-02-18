@@ -43,15 +43,22 @@ class HTMLInlineSpanDelegate(BaseWriterDelegate):
         self.collapse_section = True
         self.collapse_section_default_open = True
         self.collapse_document = True
+        if self.collapse_document:
+            self.tag_args_document_details = {"style": "margin-left: 2em;"}
+            self.tag_args_document_summary = {"style": "margin-left: -2em;"}
+        else:
+            self.tag_args_document_details = {}
+            self.tag_args_document_summary = {}
 
     def start_doc(self, name, match_results=None, html_output=True):
         self.writer.write_tag("div", newline=True)
-        self.writer.write(name)
-        self.writer.write_line()
+        if self.writer.include_doc_name:
+            self.writer.write(name)
+            self.writer.write_line()
         if self.collapse_document:
-            self.writer.write_tag("details")
+            self.writer.write_tag("details", tag_args=self.tag_args_document_details)
         if match_results is not None:
-            self.writer.write_tag("summary")
+            self.writer.write_tag("summary", tag_args=self.tag_args_document_summary)
             self.writer.write(
                 self.summarize_results(
                     match_results, html_output=True, max_num_concepts=9
@@ -154,6 +161,7 @@ class HTMLInlineSpanDelegate(BaseWriterDelegate):
         concept_counter = Counter(mr.pattern.concept for mr in match_results)
         most_common = Counter(dict(concept_counter.most_common(max_num_concepts)))
         result = "; ".join(f"{decorate(k)}({v})" for k, v in most_common.items())
-        if most_common.total() < len(match_results):
+        # if most_common.total() < len(match_results):  # python 3.10
+        if sum(most_common.values()) < len(match_results):
             result += f";... ; total({len(match_results)})"
         return result

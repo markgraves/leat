@@ -1,16 +1,19 @@
 """Color utilities"""
 
+import html
+
 from .color_constants import CSS3_NAMES_TO_HEX
+
 
 def mix_hex_color_strings(color_a, color_b=None, t=0.5, gamma=2.2):
     "Mix two colors by hex values or CSS3 names"
     # See https://stackoverflow.com/questions/726549/algorithm-for-additive-color-mixing-for-rgb-values
     def hex_to_float(h, color_missing=None):
         """Convert a hex rgb string (e.g. #ffffff) to an RGB tuple (float, float, float)."""
-        if h[0] != '#':
-            hex = CSS3_NAMES_TO_HEX.get(h, None)
+        if h[0] != "#":
+            hex = CSS3_NAMES_TO_HEX.get(h.lower(), None)
             if hex is None:
-                print('Warning:', 'Unknown color name', h)
+                print("Warning:", "Unknown color name", h)
                 return color_missing
             h = hex
         return tuple(int(h[i : i + 2], 16) / 255.0 for i in (1, 3, 5))  # skip '#'
@@ -41,3 +44,13 @@ def mix_hex_color_strings(color_a, color_b=None, t=0.5, gamma=2.2):
             for i in (0, 1, 2)
         ]
     return float_to_hex(rgb)
+
+
+def color_dict_legend(color_dict):
+    "Create a html legend for a color dict"
+    result = "<div>\n"
+    for concept, color in color_dict.items():
+        result += f'<span style="background-color: {color}">&emsp;</span> '
+        result += f'<u style="color: {color}">' + html.escape(concept) + "</u><br/>"
+    result += "</div>"
+    return result

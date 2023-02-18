@@ -37,12 +37,14 @@ class HTMLWriter(BaseWriter):
         self.delegate = HTMLInlineSpanDelegate(self)
         self.concept_colors = self.scheme.get("concept_colors", {})
         self.default_span_color = DEFAULT_SPAN_COLOR
+        self.include_doc_name = self.scheme.get("include_doc_name", True)
 
     def write_doc_result(self, item: DocResult):
         "Write document result"
         self.delegate.start_doc(str(item.doc.name), item.all_results())
         for sect_result in item.sect_results:
             self.write_doc_section_result(sect_result)
+        self.delegate.end_doc()
 
     def write_doc_section_result(self, item: DocSectResult):
         "Write document section result"
@@ -117,3 +119,11 @@ class HTMLWriter(BaseWriter):
     def write(self, text: str):
         "Write text"
         self.stream.write(text)
+
+    def get_doc_result_html(self, doc_result: DocResult):
+        "Returns the html string for a single doc result at a time"
+        assert isinstance(self.stream, StringIO)
+        self.stream.seek(0)
+        self.stream.truncate(0)
+        self.write_doc_result(doc_result)
+        return self.stream.getvalue()

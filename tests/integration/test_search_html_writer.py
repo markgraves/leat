@@ -63,10 +63,11 @@ def test_html_writer():
         in html
     )
 
+
 def test_html_writer_exact():
     results = load_results()
     results.doc.name = results.doc.name.stem
-    with open(RESULT_1, 'r') as ifp:
+    with open(RESULT_1, "r") as ifp:
         comparison_doc = ifp.read()
     w = HTMLWriter(start_pad=10, end_pad=15, scheme=COLOR_SCHEME)
     w.write_doc_result(results)
