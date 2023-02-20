@@ -41,19 +41,24 @@ class HTMLInlineSpanDelegate(BaseWriterDelegate):
     def __init__(self, writer):
         self.writer = writer
         wopts = self.writer.writer_options
-        self.collapse_section = wopts.get("collapse_section", True)
-        self.collapse_section_default_open = wopts.get(
-            "collapse_section_default_open", True
-        )
-        self.collapse_document = wopts.get("collapse_document", True)
-        self.tag_args_document_details = {
-            "style": "margin-left: 2em;",
-            **wopts.get("tag_args_document_details", {}),
-        }
-        self.tag_args_document_summary = {
-            "style": "margin-left: -2em;",
-            **wopts.get("tag_args_document_summary", {}),
-        }
+        self.details_summary = wopts.get("details_summary", True)
+        if self.details_summary:
+            self.collapse_section = wopts.get("collapse_section", True)
+            self.collapse_section_default_open = wopts.get(
+                "collapse_section_default_open", True
+            )
+            self.collapse_document = wopts.get("collapse_document", True)
+            self.tag_args_document_details = {
+                "style": "margin-left: 2em;",
+                **wopts.get("tag_args_document_details", {}),
+            }
+            self.tag_args_document_summary = {
+                "style": "margin-left: -2em;",
+                **wopts.get("tag_args_document_summary", {}),
+            }
+        else:
+            self.collapse_section = False
+            self.collapse_document = False
 
     def start_doc(self, name, match_results=None, html_output=True):
         self.writer.write_tag("div", newline=True)
@@ -62,14 +67,16 @@ class HTMLInlineSpanDelegate(BaseWriterDelegate):
             self.writer.write_line()
         if self.collapse_document:
             self.writer.write_tag("details", tag_args=self.tag_args_document_details)
-        if match_results is not None:
-            self.writer.write_tag("summary", tag_args=self.tag_args_document_summary)
-            self.writer.write(
-                self.summarize_results(
-                    match_results, html_output=True, max_num_concepts=9
+            if match_results is not None:
+                self.writer.write_tag(
+                    "summary", tag_args=self.tag_args_document_summary
                 )
-            )
-            self.writer.write_tag("summary", close=True)
+                self.writer.write(
+                    self.summarize_results(
+                        match_results, html_output=True, max_num_concepts=9
+                    )
+                )
+                self.writer.write_tag("summary", close=True)
 
     def end_doc(self):
         if self.collapse_document:
