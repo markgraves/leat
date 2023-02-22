@@ -10,6 +10,18 @@ from leat.search import Search
 
 TEST_DATA_DIRECTORY = Path(__file__).parent.parent / "data" / "docset1"
 
+MATCH_RESULT_TERM_RESULTS = {
+    "Performance Metrics": {
+        "recall": 2,
+        "sensitivity": 2,
+        "precision": 1,
+        "specificity": 1,
+    },
+    "Data Ethics": {"equity": 1},
+    "Ethical Principles": {"justice": 2},
+    "Test": {"2022": 1},
+}
+
 
 def test_local_filesys():
     local_filesys = LocalFileSys()
@@ -69,3 +81,8 @@ def test_search():
     concept_matches = doc_result.all_results(concept="Data Ethics")
     # more than one pattern for data ethics should have matched
     assert len(set(mr.pattern for mr in concept_matches)) > 1
+    print(doc_result.summarize_match_result_terms(asconcept_count=True))
+    assert (
+        doc_result.summarize_match_result_terms(asconcept_count=True)
+        == MATCH_RESULT_TERM_RESULTS
+    )

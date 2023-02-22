@@ -11,9 +11,10 @@
 ## [Unreleased]
 - Items in development
 
-## [0.1.1] - 2022-12-21 Mark Graves
+## [0.2.0] - 2023-02-21 Mark Graves
 ### Added
 - Improvements to displaying html spans
+- Helper functions for displaying results
 
 ## [0.1.0] - 2022-12-21 Mark Graves
 ### Added

@@ -19,7 +19,7 @@ DEFAULT_WRITER_OPTIONS = {
 
 
 class HTMLWriter(BaseWriter):
-    "Base Reader to write document results as html"
+    "Writer to write document results as html"
 
     def __init__(
         self, stream: Optional[IOBase] = None, scheme=None, start_pad=None, end_pad=None

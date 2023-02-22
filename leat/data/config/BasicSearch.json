@@ -31,7 +31,7 @@
         "_sheet_type": "PATTERN",
         "Data Ethics": {
             "2": [
-                "\\bequit"
+                "\\bequit[a-zA-Z-]+\\b"
             ]
         },
         "Test": {
