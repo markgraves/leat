@@ -1,7 +1,7 @@
 """"Results of pattern matches"""
 
 from abc import ABC
-from collections import defaultdict
+from collections import defaultdict, Counter
 import re
 from typing import Dict, Optional, Sequence, Union
 
@@ -120,6 +120,20 @@ class DocResult(BaseResult):
             newd[indx] = dict(d)
         return newd
 
+    def summarize_match_result_terms(
+        self,
+        asconcept_count: bool = False,
+        ascounter: bool = True,
+        fold_case: bool = True,
+    ):
+        "Summarize a list of match results, returning as a dictionary keyed by match pattern"
+        return summarize_match_result_terms(
+            self.pat_results,
+            asconcept_count=asconcept_count,
+            ascounter=ascounter,
+            fold_case=fold_case,
+        )
+
     def astext(self, uppercase_match=False, start_pad=None, end_pad=None):
         rstr = str(self.doc.name)
         rstr += "\n"
@@ -150,6 +164,20 @@ class DocSectResult(BaseResult):
     def end(self, pad=None):
         pad = pad if pad is not None else self.end_pad
         return min(len(self.doc.text), max(r.end() for r in self.results) + pad)
+
+    def summarize_match_result_terms(
+        self,
+        asconcept_count: bool = False,
+        ascounter: bool = True,
+        fold_case: bool = True,
+    ):
+        "Summarize a list of match results, returning as a dictionary keyed by match pattern"
+        return summarize_match_result_terms(
+            self.results,
+            asconcept_count=asconcept_count,
+            ascounter=ascounter,
+            fold_case=fold_case,
+        )
 
     def astext(self, uppercase_match=False, start_pad=None, end_pad=None):
         "Text string for section with matches"
@@ -195,3 +223,69 @@ class MatchResult(BaseResult):
 
     def __str__(self):
         return f"<{__class__.__name__} {(self.start(), self.end())} {self.astext()}>"
+
+
+def summarize_match_result_terms(
+    match_results: Union[list, dict],
+    asconcept_count: bool = False,
+    ascounter: bool = True,
+    fold_case: bool = True,
+):
+    "Summarize a list of match results, returning as a dictionary keyed by match pattern"
+    if asconcept_count:
+        ascounter = True
+    if ascounter:
+        results = defaultdict(Counter)
+    else:
+        results = defaultdict(list)
+    if isinstance(match_results, dict):
+        for pat, mr_list in match_results.items():
+            for mr in mr_list:
+                # print('DEBUG', 'MR', (mr.pattern.pattern, mr.match.group(0), mr.start(), mr.end()))
+                if ascounter:
+                    results[pat][mr.match.group(0)] += 1
+                else:
+                    results[pat].append(mr.match.group(0))
+    else:
+        for mr in match_results:
+            # print('DEBUG', 'MR', (mr.pattern.pattern, mr.match.group(0), mr.start(), mr.end()))
+            if ascounter:
+                results[mr.pattern][mr.match.group(0)] += 1
+            else:
+                results[mr.pattern].append(mr.match.group(0))
+    if not fold_case or not ascounter:
+        if asconcept_count:
+            return {
+                pattern.concept: dict(ctr.most_common(None))
+                for pattern, ctr in results.items()
+            }
+        return dict(results)
+    newresults = {}
+    for pat, ctr in results.items():
+        if not (pat.flags & re.IGNORECASE):
+            # only fold case if the pattern had ignore case flag set (i.e, was case insensitive)
+            newresults[pat] = ctr
+            continue
+        equivalent_terms = defaultdict(list)
+        for term in ctr:
+            equivalent_terms[term.casefold()].append(term)
+        folded_terms = {}
+        for lower, term_list in equivalent_terms.items():
+            if len(term_list) == 1:
+                continue
+            key = max(
+                term_list
+            )  # max takes the highest ord value, so prefer lower case or accented
+            for term in term_list:
+                if term != key:
+                    folded_terms[term] = key
+        newctr = Counter()
+        for term, val in ctr.items():
+            newctr[folded_terms.get(term, term)] += val
+        newresults[pat] = newctr
+    if asconcept_count:
+        return {
+            pattern.concept: dict(ctr.most_common(None))
+            for pattern, ctr in newresults.items()
+        }
+    return newresults

@@ -25,23 +25,46 @@
             "respect for autonomy",
             "patient autonomy",
             "autonomy"
+        ],
+        "Be Verbs": [
+            "are",
+            "is"
+        ],
+        "Conjunctions": [
+            "and",
+            "as well as",
+            "and/or"
+        ],
+        "Articles": [
+            "the",
+            "a"
         ]
     },
     "Patterns": {
         "_sheet_type": "PATTERN",
-        "Data Ethics": {
+        "Clause": {
             "2": [
-                "\\bequit[a-zA-Z-]+\\b"
+                ",[ a-z]+,"
             ]
         },
-        "Test": {
+        "Year": {
             "2": [
                 "\\b\\d\\d\\d\\d\\b"
-            ],
+            ]
+        },
+        "First 7": {
             "0": [
-                "WHO",
-                "MAR",
-                "Sen"
+                "[A-Z][ a-z]{7}"
+            ]
+        },
+        "Second 5": {
+            "0": [
+                "(?<=[A-Z][ a-z]{4})[ a-z]{5}"
+            ]
+        },
+        "First 10": {
+            "0": [
+                "[A-Z][ a-z]{10}"
             ]
         }
     }

@@ -48,6 +48,9 @@ def build_match_patterns_search(config_data, source_name="", metadata={}):
         if concept.startswith("_"):
             continue
         pattern_string = create_terms_pattern(term_list)
+        if pattern_string is None:
+            continue
+        # print("DEBUG:", "Building search pattern", pattern_string)
         flags = re.IGNORECASE
         match_pattern = MatchPattern(
             concept,

@@ -7,10 +7,19 @@ from typing import Optional, Union
 
 from . import BaseWriter, SpanScheme
 from ..result import DocResult, DocSectResult, MatchResult
+from ..display import HTMLInlineSpanDelegate
+
+DEFAULT_SPAN_COLOR = "#F1E740"  # dark yellow
+
+DEFAULT_WRITER_OPTIONS = {
+    # should have values for all possible keys, even if None, to simplify access
+    "pretty_html": True,  # True for debugging
+    "include_doc_name": True,  # Include doc name in output
+}
 
 
 class HTMLWriter(BaseWriter):
-    "Base Reader to write document results as html"
+    "Writer to write document results as html"
 
     def __init__(
         self, stream: Optional[IOBase] = None, scheme=None, start_pad=None, end_pad=None
@@ -30,16 +39,21 @@ class HTMLWriter(BaseWriter):
             self.scheme = SpanScheme(start_pad=start_pad, end_pad=end_pad)
         self.start_pad = start_pad if start_pad is not None else self.scheme.start_pad
         self.end_pad = end_pad if start_pad is not None else self.scheme.end_pad
-        self.pretty_html = self.scheme.get("pretty_html", True)  # True for debugging
         self.concept_colors = self.scheme.get("concept_colors", {})
-        self.default_span_color = "#FFFF00"
+        self.default_span_color = DEFAULT_SPAN_COLOR
+        self.writer_options = {
+            **DEFAULT_WRITER_OPTIONS,
+            **self.scheme.get("writer_options", {}),
+        }
+        self.include_doc_name = self.scheme.get("include_doc_name", True)
+        self.delegate = HTMLInlineSpanDelegate(self)
 
     def write_doc_result(self, item: DocResult):
         "Write document result"
-        self.write(str(item.doc.name))
-        self.write_line()
+        self.delegate.start_doc(str(item.doc.name), item.all_results())
         for sect_result in item.sect_results:
             self.write_doc_section_result(sect_result)
+        self.delegate.end_doc()
 
     def write_doc_section_result(self, item: DocSectResult):
         "Write document section result"
@@ -47,28 +61,29 @@ class HTMLWriter(BaseWriter):
         end = item.end(pad=self.end_pad)
         # Sweep spans
         sweepd = DocResult.line_sweep_spans(item.results)
-        self.write_tag("div", newline=True)
+        self.delegate.start_section(item.results)
         current_index = start
+        # span_stack = []
         for indx, d in sweepd.items():
-            if "c" in d:
-                print("WARN:", "HTMLWriter does not yet handle overlapping spans")
             self.write_clean_text(item.doc.text[current_index:indx])
-            for mr in d.get("e", []):
-                self.write_span_label(mr.pattern.concept)
-                self.write_tag("span", close=True)
-            for mr in d.get("s", []):
-                self.write_tag(
-                    "span",
-                    tag_args={
-                        "style": "color:"
-                        + self.concept_colors.get(
-                            mr.pattern.concept, self.default_span_color
-                        )
-                    },
-                )
+            self.delegate.write_span_end()
+            if "e" in d:
+                self.delegate.end_doc_span(d["e"])
+            self.delegate.init_span()
+            if "c" in d:
+                self.delegate.continue_doc_span(d["c"])
+            if "s" in d:
+                self.delegate.start_doc_span(d["s"])
+            self.delegate.write_span_start()
             current_index = indx
         self.write_clean_text(item.doc.text[current_index:end])
-        self.write_tag("div", close=True, newline=True)
+        self.delegate.end_section()
+
+    def get_match_result_color(self, match_result):
+        "Return the color for a match result concept"
+        return self.concept_colors.get(
+            match_result.pattern.concept, self.default_span_color
+        )
 
     def write_span_label(self, text: str):
         "Write span label"
@@ -76,7 +91,7 @@ class HTMLWriter(BaseWriter):
 
     def write_clean_text(self, text: str):
         "Clean and write text"
-        if self.pretty_html:
+        if self.writer_options["pretty_html"]:
             text = (
                 text.replace("\n", " ")
                 .replace("\r", " ")
@@ -113,3 +128,11 @@ class HTMLWriter(BaseWriter):
     def write(self, text: str):
         "Write text"
         self.stream.write(text)
+
+    def get_doc_result_html(self, doc_result: DocResult):
+        "Returns the html string for a single doc result at a time"
+        assert isinstance(self.stream, StringIO)
+        self.stream.seek(0)
+        self.stream.truncate(0)
+        self.write_doc_result(doc_result)
+        return self.stream.getvalue()
