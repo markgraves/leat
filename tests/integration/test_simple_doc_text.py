@@ -81,8 +81,14 @@ def test_search():
     concept_matches = doc_result.all_results(concept="Data Ethics")
     # more than one pattern for data ethics should have matched
     assert len(set(mr.pattern for mr in concept_matches)) > 1
-    print(doc_result.summarize_match_result_terms(asconcept_count=True))
+    print(
+        doc_result.summarize_match_result_terms(
+            concept_key=True, counter_value_as_dict=True
+        )
+    )
     assert (
-        doc_result.summarize_match_result_terms(asconcept_count=True)
+        doc_result.summarize_match_result_terms(
+            concept_key=True, counter_value_as_dict=True
+        )
         == MATCH_RESULT_TERM_RESULTS
     )

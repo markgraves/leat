@@ -122,15 +122,17 @@ class DocResult(BaseResult):
 
     def summarize_match_result_terms(
         self,
-        asconcept_count: bool = False,
-        ascounter: bool = True,
+        concept_key: bool = False,
+        counter_value: bool = True,
+        counter_value_as_dict: bool = True,
         fold_case: bool = True,
     ):
         "Summarize a list of match results, returning as a dictionary keyed by match pattern"
         return summarize_match_result_terms(
             self.pat_results,
-            asconcept_count=asconcept_count,
-            ascounter=ascounter,
+            concept_key=concept_key,
+            counter_value=counter_value,
+            counter_value_as_dict=counter_value_as_dict,
             fold_case=fold_case,
         )
 
@@ -167,15 +169,17 @@ class DocSectResult(BaseResult):
 
     def summarize_match_result_terms(
         self,
-        asconcept_count: bool = False,
-        ascounter: bool = True,
+        concept_key: bool = False,
+        counter_value: bool = True,
+        counter_value_as_dict: bool = True,
         fold_case: bool = True,
     ):
         "Summarize a list of match results, returning as a dictionary keyed by match pattern"
         return summarize_match_result_terms(
             self.results,
-            asconcept_count=asconcept_count,
-            ascounter=ascounter,
+            concept_key=concept_key,
+            counter_value=counter_value,
+            counter_value_as_dict=counter_value_as_dict,
             fold_case=fold_case,
         )
 
@@ -224,17 +228,16 @@ class MatchResult(BaseResult):
     def __str__(self):
         return f"<{__class__.__name__} {(self.start(), self.end())} {self.astext()}>"
 
-#TODO: concept_key: bool = False, counter_value: bool = True
+
 def summarize_match_result_terms(
     match_results: Union[list, dict],
-    asconcept_count: bool = False,
-    ascounter: bool = True,
+    concept_key: bool = False,
+    counter_value: bool = True,
+    counter_value_as_dict: bool = True,
     fold_case: bool = True,
 ):
     "Summarize a list of match results, returning as a dictionary keyed by match pattern"
-    if asconcept_count:
-        ascounter = True
-    if ascounter:
+    if counter_value:
         results = defaultdict(Counter)
     else:
         results = defaultdict(list)
@@ -242,50 +245,56 @@ def summarize_match_result_terms(
         for pat, mr_list in match_results.items():
             for mr in mr_list:
                 # print('DEBUG', 'MR', (mr.pattern.pattern, mr.match.group(0), mr.start(), mr.end()))
-                if ascounter:
+                if counter_value:
                     results[pat][mr.match.group(0)] += 1
                 else:
                     results[pat].append(mr.match.group(0))
     else:
         for mr in match_results:
             # print('DEBUG', 'MR', (mr.pattern.pattern, mr.match.group(0), mr.start(), mr.end()))
-            if ascounter:
+            if counter_value:
                 results[mr.pattern][mr.match.group(0)] += 1
             else:
                 results[mr.pattern].append(mr.match.group(0))
-    if not fold_case or not ascounter:
-        if asconcept_count:
+    # Maybe fold case
+    if fold_case and counter_value:
+        newresults = {}
+        for pat, ctr in results.items():
+            if not (pat.flags & re.IGNORECASE):
+                # only fold case if the pattern had ignore case flag set (i.e, was case insensitive)
+                newresults[pat] = ctr
+                continue
+            equivalent_terms = defaultdict(list)
+            for term in ctr:
+                equivalent_terms[term.casefold()].append(term)
+            folded_terms = {}
+            for lower, term_list in equivalent_terms.items():
+                if len(term_list) == 1:
+                    continue
+                key = max(
+                    term_list
+                )  # max takes the highest ord value, so prefer lower case or accented
+                for term in term_list:
+                    if term != key:
+                        folded_terms[term] = key
+            newctr = Counter()
+            for term, val in ctr.items():
+                newctr[folded_terms.get(term, term)] += val
+            newresults[pat] = newctr
+        results = newresults
+    # Return results
+    if concept_key:
+        if counter_value and counter_value_as_dict:
             return {
                 pattern.concept: dict(ctr.most_common(None))
                 for pattern, ctr in results.items()
             }
-        return dict(results)
-    newresults = {}
-    for pat, ctr in results.items():
-        if not (pat.flags & re.IGNORECASE):
-            # only fold case if the pattern had ignore case flag set (i.e, was case insensitive)
-            newresults[pat] = ctr
-            continue
-        equivalent_terms = defaultdict(list)
-        for term in ctr:
-            equivalent_terms[term.casefold()].append(term)
-        folded_terms = {}
-        for lower, term_list in equivalent_terms.items():
-            if len(term_list) == 1:
-                continue
-            key = max(
-                term_list
-            )  # max takes the highest ord value, so prefer lower case or accented
-            for term in term_list:
-                if term != key:
-                    folded_terms[term] = key
-        newctr = Counter()
-        for term, val in ctr.items():
-            newctr[folded_terms.get(term, term)] += val
-        newresults[pat] = newctr
-    if asconcept_count:
-        return {
-            pattern.concept: dict(ctr.most_common(None))
-            for pattern, ctr in newresults.items()
-        }
-    return newresults
+        else:
+            return {pattern.concept: vals for pattern, vals in results.items()}
+    else:
+        if counter_value and counter_value_as_dict:
+            return {
+                pattern: dict(ctr.most_common(None)) for pattern, ctr in results.items()
+            }
+        else:
+            return results

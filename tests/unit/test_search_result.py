@@ -1,8 +1,10 @@
+from collections import Counter
 import re
 
 import pytest
 
 from leat.search.result import DocResult
+from leat.search.result.result import summarize_match_result_terms
 
 
 def test_bin_sliding_window_span_empty():
@@ -29,11 +31,27 @@ BRACES_RE = r"\{.*?\}"
 MATCH_PATTERN = r"(?=(" + "|".join([PARENS_RE, BRACKETS_RE, BRACES_RE]) + r"))"
 
 
+class M:
+    def __init__(self, matched_text):
+        self.matched_text = matched_text
+
+    def group(self, *args):
+        return self.matched_text
+
+
+class MP:
+    def __init__(self, pattern, flags=0):
+        self.pattern = pattern
+        self.flags = flags
+        self.concept = "Test"
+
+
 class MR:
     def __init__(self, pattern, matched_text, start, end, doc_text=""):
         self.doc_text = doc_text
         self.pattern = pattern
         self.matched_text = matched_text
+        self.match = M(matched_text)
         self._start = start
         self._end = end
 
@@ -119,3 +137,32 @@ SWEEP_SPANS_RESULTS = [
 @pytest.mark.parametrize(("text", "expected"), SWEEP_SPANS_RESULTS)
 def test_sweep_spans(text, expected):
     assert DocResult.line_sweep_spans(gen_matches(text, MATCH_PATTERN)) == expected
+
+
+## Test summarize_match_result_terms
+
+DOC_TEXT_SMRT = "This is a test of precision and recall"
+MATCH_PATTERN_SMRT = MP(r"\bprecision\b|\brecall\b")
+MATCH_RESULTS_SMRT = [
+    MR(MATCH_PATTERN_SMRT, "precision", 18, 27, doc_text=DOC_TEXT_SMRT),
+    MR(MATCH_PATTERN_SMRT, "recall", 32, 38, doc_text=DOC_TEXT_SMRT),
+]
+
+
+def test_summarize_match_result_terms_base():
+    r = summarize_match_result_terms(MATCH_RESULTS_SMRT)
+    assert list(r.values())[0] == {"precision": 1, "recall": 1}
+    assert isinstance(list(r.keys())[0], MP)
+
+
+def test_summarize_match_result_terms_args():
+    r = summarize_match_result_terms(MATCH_RESULTS_SMRT)
+    assert list(r.values())[0] == {"precision": 1, "recall": 1}
+    assert isinstance(list(r.keys())[0], MP)
+    r = summarize_match_result_terms(MATCH_RESULTS_SMRT, concept_key=True)
+    assert "Test" in r
+    r = summarize_match_result_terms(MATCH_RESULTS_SMRT, counter_value=False)
+    assert list(r.values())[0] == ["precision", "recall"]
+    r = summarize_match_result_terms(MATCH_RESULTS_SMRT, counter_value_as_dict=False)
+    assert list(r.values())[0] == {"precision": 1, "recall": 1}
+    assert isinstance(list(r.values())[0], Counter)

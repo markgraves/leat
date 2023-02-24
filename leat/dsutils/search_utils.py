@@ -56,13 +56,17 @@ def doc_results_text(doc_results_s, text_colname: str = "text"):
 def concept_results_dataframe(
     doc_results_s,
     fold_case: bool = True,
-    asconcept_count: bool = True,
-    ascounter: bool = True,
+    concept_key: bool = True,
+    counter_value: bool = True,
+    counter_value_as_dict: bool = True,
 ):
     "Expand doc results dict to a column of text match counts for each concept"
     temp_concept_matches = doc_results_s.apply(
         lambda x: x.summarize_match_result_terms(
-            asconcept_count=asconcept_count, fold_case=fold_case, ascounter=ascounter
+            concept_key=concept_key,
+            counter_value=counter_value,
+            counter_value_as_dict=counter_value_as_dict,
+            fold_case=fold_case,
         )
     )
     concept_matches_df = pd.DataFrame.from_records(
