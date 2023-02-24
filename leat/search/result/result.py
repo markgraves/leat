@@ -224,7 +224,7 @@ class MatchResult(BaseResult):
     def __str__(self):
         return f"<{__class__.__name__} {(self.start(), self.end())} {self.astext()}>"
 
-
+#TODO: concept_key: bool = False, counter_value: bool = True
 def summarize_match_result_terms(
     match_results: Union[list, dict],
     asconcept_count: bool = False,
