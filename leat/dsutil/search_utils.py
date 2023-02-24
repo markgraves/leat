@@ -1,5 +1,7 @@
 """Utilities to manage search results using pandas dataframes"""
 
+from collections import Counter
+
 import pandas as pd
 
 
@@ -15,6 +17,17 @@ def counter_to_total(ctr):
     if pd.isnull(ctr):
         return 0
     return sum(ctr.values())
+
+
+def sum_counters(counter_list):
+    cnt = Counter()
+    for c in counter_list:
+        if pd.notnull(c):
+            cnt.update(c)
+    if len(cnt):
+        return cnt
+    else:
+        return {}
 
 
 def search_dataframe(

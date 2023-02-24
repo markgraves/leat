@@ -130,13 +130,18 @@ def write_doc_table(df, stream=None):
 def write_dataframe_html(
     dataframe, writer, stream=None, doc_results_colname="Doc Results"
 ):
+    """Write dataframe to html as interspersed data row and text results row.
+    Doc results can be a list, whose html will be concatenated
+    """
     if stream is None:
         stream = StringIO()
         return_string = True
     else:
         return_string = False
     dataframe["doc_result_html"] = dataframe[doc_results_colname].apply(
-        writer.get_doc_result_html
+        lambda x: writer.get_doc_result_html(x)
+        if not isinstance(x, list)
+        else "\n".join(writer.get_doc_result_html(d) for d in x)
     )
     write_doc_table(dataframe.drop(columns=[doc_results_colname]).reset_index(), stream)
     if return_string:
