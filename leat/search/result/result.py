@@ -208,6 +208,7 @@ class MatchResult(BaseResult):
 
     def __init__(self, doc: Document, pattern: MatchPattern, match: re.Match):
         self.match = match
+        self.match_text = match.group(0)
         self.pattern = pattern
         self.doc = doc
 
