@@ -58,7 +58,7 @@ def concept_results_dataframe(
     fold_case: bool = True,
     concept_key: bool = True,
     counter_value: bool = True,
-    counter_value_as_dict: bool = True,
+    counter_value_as_dict: bool = False,
 ):
     "Expand doc results dict to a column of text match counts for each concept"
     temp_concept_matches = doc_results_s.apply(
