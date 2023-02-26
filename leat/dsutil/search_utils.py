@@ -30,6 +30,11 @@ def sum_counters(counter_list):
         return {}
 
 
+def series_counter_dict_expand(s):
+    "Expand a Series of counter-like dicts to a DataFrame"
+    return pd.DataFrame.from_records(s.tolist(), index=s.index).fillna(0).astype(int)
+
+
 def search_dataframe(
     search,
     dataframe,
