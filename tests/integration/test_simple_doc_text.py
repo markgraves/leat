@@ -6,6 +6,7 @@ from leat.store.core import DocStore
 from leat.store.filesys import LocalFileSys
 from leat.search.config import ConfigData
 from leat.search import Search
+from leat.search.result import DocResult
 
 
 TEST_DATA_DIRECTORY = Path(__file__).parent.parent / "data" / "docset1"
@@ -92,3 +93,87 @@ def test_search():
         )
         == MATCH_RESULT_TERM_RESULTS
     )
+
+
+def test_to_from_dict():
+    config_data = ConfigData(predefined_configuration="BasicSearch")
+    doc_store = get_doc_store()
+    searcher = Search(config_data, doc_store)
+    results = [r for r in searcher.search_documents(section_sep=0)]
+    doc_result = results.pop()
+    assert doc_result.doc.name == get_doc().name
+    dr_original = doc_result
+    dr_test = DocResult.from_dict(
+        dr_original.to_dict(include_text=True, compact_match_result=False)
+    )
+    assert dr_original.doc.name == dr_test.doc.name
+    dr_original_result_pat1 = list(dr_original.pat_results.keys())[0]
+    dr_test_result_pat1 = list(dr_test.pat_results.keys())[0]
+    assert dr_original_result_pat1.concept == dr_test_result_pat1.concept
+    assert dr_original_result_pat1.pattern == dr_test_result_pat1.pattern
+    assert dr_original_result_pat1.flags == dr_test_result_pat1.flags
+    assert dr_original_result_pat1.source == dr_test_result_pat1.source
+    assert dr_original_result_pat1.metadata == dr_test_result_pat1.metadata
+    dr_original_result_pat2 = list(dr_original.pat_results.keys())[1]
+    dr_test_result_pat2 = list(dr_test.pat_results.keys())[1]
+    assert dr_original_result_pat2.concept == dr_test_result_pat2.concept
+    assert dr_original_result_pat2.pattern == dr_test_result_pat2.pattern
+    assert dr_original_result_pat2.flags == dr_test_result_pat2.flags
+    dr_original_result_val1_1 = list(dr_original.pat_results.values())[0][0]
+    dr_test_result_val1_1 = list(dr_test.pat_results.values())[0][0]
+    assert dr_original_result_val1_1.start == dr_test_result_val1_1.start
+    assert dr_original_result_val1_1.end == dr_test_result_val1_1.end
+    assert dr_original_result_val1_1.match_text == dr_test_result_val1_1.match_text
+    assert (
+        dr_original_result_val1_1.pattern.concept
+        == dr_test_result_val1_1.pattern.concept
+    )
+    assert (
+        dr_original_result_val1_1.pattern.pattern
+        == dr_test_result_val1_1.pattern.pattern
+    )
+    assert (
+        dr_original_result_val1_1.pattern.flags == dr_test_result_val1_1.pattern.flags
+    )
+    assert dr_original_result_val1_1.doc.name == dr_test_result_val1_1.doc.name
+
+
+def test_to_from_dict_compact():
+    config_data = ConfigData(predefined_configuration="BasicSearch")
+    doc_store = get_doc_store()
+    searcher = Search(config_data, doc_store)
+    results = [r for r in searcher.search_documents(section_sep=0)]
+    doc_result = results.pop()
+    assert doc_result.doc.name == get_doc().name
+    dr_original = doc_result
+    dr_test = DocResult.from_dict(dr_original.to_dict())
+    assert dr_original.doc.name == dr_test.doc.name
+    dr_original_result_pat1 = list(dr_original.pat_results.keys())[0]
+    dr_test_result_pat1 = list(dr_test.pat_results.keys())[0]
+    assert dr_original_result_pat1.concept == dr_test_result_pat1.concept
+    assert dr_original_result_pat1.pattern == dr_test_result_pat1.pattern
+    assert dr_original_result_pat1.flags == dr_test_result_pat1.flags
+    assert dr_original_result_pat1.source == dr_test_result_pat1.source
+    assert dr_original_result_pat1.metadata == dr_test_result_pat1.metadata
+    dr_original_result_pat2 = list(dr_original.pat_results.keys())[1]
+    dr_test_result_pat2 = list(dr_test.pat_results.keys())[1]
+    assert dr_original_result_pat2.concept == dr_test_result_pat2.concept
+    assert dr_original_result_pat2.pattern == dr_test_result_pat2.pattern
+    assert dr_original_result_pat2.flags == dr_test_result_pat2.flags
+    dr_original_result_val1_1 = list(dr_original.pat_results.values())[0][0]
+    dr_test_result_val1_1 = list(dr_test.pat_results.values())[0][0]
+    assert dr_original_result_val1_1.start == dr_test_result_val1_1.start
+    assert dr_original_result_val1_1.end == dr_test_result_val1_1.end
+    assert dr_original_result_val1_1.match_text == dr_test_result_val1_1.match_text
+    assert (
+        dr_original_result_val1_1.pattern.concept
+        == dr_test_result_val1_1.pattern.concept
+    )
+    assert (
+        dr_original_result_val1_1.pattern.pattern
+        == dr_test_result_val1_1.pattern.pattern
+    )
+    assert (
+        dr_original_result_val1_1.pattern.flags == dr_test_result_val1_1.pattern.flags
+    )
+    assert dr_original_result_val1_1.doc.name == dr_test_result_val1_1.doc.name

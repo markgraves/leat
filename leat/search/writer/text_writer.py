@@ -46,7 +46,7 @@ class TextWriter(BaseWriter):
         self.write_line()
         for mr in item.results:
             mrtext = mr.astext(uppercase_match=self.uppercase_match)
-            self.write_line(" " * (mr.start() - start) + mrtext)
+            self.write_line(" " * (mr.start - start) + mrtext)
 
     def write_clean_text(self, text: str):
         "Clean and write text"

@@ -3,6 +3,7 @@ import re
 
 import pytest
 
+from leat.store.core import Document
 from leat.search.result import DocResult
 from leat.search.result.result import summarize_match_result_terms
 
@@ -52,25 +53,19 @@ class MR:
         self.pattern = pattern
         self.matched_text = matched_text
         self.match = M(matched_text)
-        self._start = start
-        self._end = end
-
-    def start(self):
-        return self._start
-
-    def end(self):
-        return self._end
+        self.start = start
+        self.end = end
 
     def astext(self):
         return self.matched_text
 
     def __repr__(self):
-        return f'MR("{self.pattern}", "{self.astext()}", {self.start()}, {self.end()})'
+        return f'MR("{self.pattern}", "{self.astext()}", {self.start}, {self.end})'
 
     def __eq__(self, other):
         return (
-            self.start() == other.start()
-            and self.end() == other.end()
+            self.start == other.start
+            and self.end == other.end
             and self.pattern == other.pattern
             and self.astext() == other.astext()
         )
@@ -166,3 +161,14 @@ def test_summarize_match_result_terms_args():
     r = summarize_match_result_terms(MATCH_RESULTS_SMRT, counter_value_as_dict=False)
     assert list(r.values())[0] == {"precision": 1, "recall": 1}
     assert isinstance(list(r.values())[0], Counter)
+
+
+def test_to_from_dict_doc():
+    document_text = "This is a test"
+    doc1 = Document("test", document_text)
+    assert Document.from_dict(doc1.to_dict()).name == doc1.name
+    doc_result1 = DocResult(doc1, {})
+    dr1_test = DocResult.from_dict(doc_result1.to_dict())
+    print(doc_result1)
+    print(dr1_test)
+    assert dr1_test.doc.name == doc_result1.doc.name

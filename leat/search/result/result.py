@@ -21,7 +21,7 @@ class DocResult(BaseResult):
     def __init__(
         self,
         doc: Document,
-        pat_results: Dict[MatchPattern, Sequence[Union["MatchResult", re.Match]]],
+        pat_results: Dict[MatchPattern, Sequence["MatchResult"]],
         section_sep: int = 0,
     ):
         self.doc = doc
@@ -67,7 +67,7 @@ class DocResult(BaseResult):
         # start: end: match_pattern: [matches]
         for k, vlist in results.items():
             for v in vlist:
-                span_start[v.start()][v.end()][k].append(v)
+                span_start[v.start][v.end][k].append(v)
         return __class__.bin_sliding_window_span(span_start, section_sep)
 
     @staticmethod
@@ -105,8 +105,8 @@ class DocResult(BaseResult):
         # sweepd = {index: {'s|e|c': [match_pattern, ...]}}
         sweepd = defaultdict(lambda: defaultdict(list))
         for mr in match_results:
-            sweepd[mr.start()]["s"].append(mr)
-            sweepd[mr.end()]["e"].append(mr)
+            sweepd[mr.start]["s"].append(mr)
+            sweepd[mr.end]["e"].append(mr)
         sweepd = dict(sorted(sweepd.items()))
         current = []
         newd = {}
@@ -143,6 +143,41 @@ class DocResult(BaseResult):
             rstr += sect_result.astext(start_pad=start_pad, end_pad=end_pad)
         return rstr
 
+    def to_dict(self, include_text=False, compact_match_result=True):
+        d = {}
+        d["doc"] = self.doc.to_dict(include_text=include_text, use_hash=True)
+        d["pat_results"] = [
+            [
+                k.to_dict(),
+                [
+                    v.to_dict(
+                        include_doc=(not compact_match_result),
+                        include_pattern=(not compact_match_result),
+                    )
+                    for v in vlist
+                ],
+            ]
+            for k, vlist in self.pat_results.items()
+        ]
+        if hasattr(self, "section_sep"):
+            d["section_sep"] = self.section_sep
+        return d
+
+    @classmethod
+    def from_dict(cls, d):
+        """Create a DocResult from a dict"""
+        doc = Document.from_dict(d["doc"])
+        pat_results_dict = d.get("pat_results", {})
+        pat_results = {}
+        for p_r in pat_results_dict:
+            pat_obj = MatchPattern.from_dict(p_r[0])
+            pat_results[pat_obj] = [
+                MatchResult.from_dict(r, default_doc=doc, default_pattern=pat_obj)
+                for r in p_r[1]
+            ]
+        section_sep = d.get("section_sep", 0)
+        return cls(doc, pat_results, section_sep=section_sep)
+
 
 class DocSectResult(BaseResult):
     "Results of pattern matches in a document section"
@@ -161,11 +196,11 @@ class DocSectResult(BaseResult):
 
     def start(self, pad=None):
         pad = pad if pad is not None else self.start_pad
-        return max(0, min(r.start() for r in self.results) - pad)
+        return max(0, min(r.start for r in self.results) - pad)
 
     def end(self, pad=None):
         pad = pad if pad is not None else self.end_pad
-        return min(len(self.doc.text), max(r.end() for r in self.results) + pad)
+        return min(len(self.doc.text), max(r.end for r in self.results) + pad)
 
     def summarize_match_result_terms(
         self,
@@ -198,7 +233,7 @@ class DocSectResult(BaseResult):
         )
         for mr in self.results:
             mrtext = mr.astext(uppercase_match=uppercase_match)
-            rstr += "\n" + " " * (mr.start() - start) + mrtext
+            rstr += "\n" + " " * (mr.start - start) + mrtext
         rstr += "\n"
         return rstr
 
@@ -208,26 +243,57 @@ class MatchResult(BaseResult):
 
     def __init__(self, doc: Document, pattern: MatchPattern, match: re.Match):
         self.match = match
+        self.start = match.start()
+        self.end = match.end()
         self.match_text = match.group(0)
         self.pattern = pattern
         self.doc = doc
 
-    def start(self):
-        return self.match.start()
-
-    def end(self):
-        return self.match.end()
-
     def astext(self, uppercase_match=False):
         "Text string for match"
-        text = self.doc.text[self.match.start() : self.match.end()]
-        assert text == self.match.group(0)
+        text = self.match_text
         if uppercase_match:
             text = text.upper()
         return text + f"[{self.pattern.concept}]"
 
+    def to_dict(self, include_doc=True, include_pattern=True):
+        d = {}
+        d["start"] = self.start
+        d["end"] = self.end
+        d["match_text"] = self.match_text
+        if include_pattern:
+            d["pattern"] = self.pattern.to_dict()
+        if include_doc:
+            d["doc"] = self.doc.to_dict()
+        return d
+
+    @classmethod
+    def from_dict(cls, d, default_pattern=None, default_doc=None):
+        """Create a MatchResult from a dict"""
+        obj = cls.__new__(cls)
+        super(MatchResult, obj).__init__()
+        obj.match = None
+        obj.start = d["start"]
+        obj.end = d["end"]
+        obj.match_text = d["match_text"]
+        pattern = d.get("pattern")
+        if pattern is not None:
+            obj.pattern = MatchPattern.from_dict(pattern)
+        elif default_pattern is not None:
+            obj.pattern = default_pattern
+        else:
+            obj.pattern = None
+        doc = d.get("doc")
+        if doc is not None:
+            obj.doc = Document.from_dict(doc)
+        elif default_doc is not None:
+            obj.doc = default_doc
+        else:
+            obj.doc = None
+        return obj
+
     def __str__(self):
-        return f"<{__class__.__name__} {(self.start(), self.end())} {self.astext()}>"
+        return f"<{__class__.__name__} {(self.start, self.end)} {self.astext()}>"
 
 
 def summarize_match_result_terms(

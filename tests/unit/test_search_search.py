@@ -14,9 +14,9 @@ def test_search():
     assert list(r.pat_results.keys())[0].concept == "Performance Metrics"
     mr1 = list(r.pat_results.values())[0][0]
     mr2 = list(r.pat_results.values())[0][1]
-    assert mr1.start() == 18
-    assert mr1.end() == 27
+    assert mr1.start == 18
+    assert mr1.end == 27
     assert mr1.match_text == "precision"
-    assert mr2.start() == 32
-    assert mr2.end() == 38
+    assert mr2.start == 32
+    assert mr2.end == 38
     assert mr2.match_text == "recall"
