@@ -94,14 +94,16 @@ class Search:
 
     def search_document(self, doc: Document, section_sep: Optional[int] = None):
         "Search a document for all match patterns"
-        print("INFO:", doc.name, len(doc.text))
+        # print("INFO:", doc.name, len(doc.text))
         if section_sep is None:
             section_sep = self.default_section_sep
         docresults = defaultdict(list)
         for pattern in self.match_patterns:
             matches = list(pattern.finditer(doc.text))
-            docresults[pattern].extend(matches)
-        return DocResult(doc, dict(docresults), section_sep=section_sep)
+            if matches:
+                docresults[pattern].extend(matches)
+        if docresults:
+            return DocResult(doc, dict(docresults), section_sep=section_sep)
 
     def read_search_document(
         self, file: Union[Path, str], section_sep: Optional[int] = None

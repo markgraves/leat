@@ -21,7 +21,7 @@ class DocResult(BaseResult):
     def __init__(
         self,
         doc: Document,
-        pat_results: Dict[MatchPattern, Sequence[Union["MatchResult", re.Match]]],
+        pat_results: Dict[MatchPattern, Sequence["MatchResult"]],
         section_sep: int = 0,
     ):
         self.doc = doc
@@ -67,7 +67,7 @@ class DocResult(BaseResult):
         # start: end: match_pattern: [matches]
         for k, vlist in results.items():
             for v in vlist:
-                span_start[v.start()][v.end()][k].append(v)
+                span_start[v.start][v.end][k].append(v)
         return __class__.bin_sliding_window_span(span_start, section_sep)
 
     @staticmethod
@@ -105,8 +105,8 @@ class DocResult(BaseResult):
         # sweepd = {index: {'s|e|c': [match_pattern, ...]}}
         sweepd = defaultdict(lambda: defaultdict(list))
         for mr in match_results:
-            sweepd[mr.start()]["s"].append(mr)
-            sweepd[mr.end()]["e"].append(mr)
+            sweepd[mr.start]["s"].append(mr)
+            sweepd[mr.end]["e"].append(mr)
         sweepd = dict(sorted(sweepd.items()))
         current = []
         newd = {}
@@ -122,15 +122,17 @@ class DocResult(BaseResult):
 
     def summarize_match_result_terms(
         self,
-        asconcept_count: bool = False,
-        ascounter: bool = True,
+        concept_key: bool = False,
+        counter_value: bool = True,
+        counter_value_as_dict: bool = True,
         fold_case: bool = True,
     ):
         "Summarize a list of match results, returning as a dictionary keyed by match pattern"
         return summarize_match_result_terms(
             self.pat_results,
-            asconcept_count=asconcept_count,
-            ascounter=ascounter,
+            concept_key=concept_key,
+            counter_value=counter_value,
+            counter_value_as_dict=counter_value_as_dict,
             fold_case=fold_case,
         )
 
@@ -140,6 +142,41 @@ class DocResult(BaseResult):
         for sect_result in self.sect_results:
             rstr += sect_result.astext(start_pad=start_pad, end_pad=end_pad)
         return rstr
+
+    def to_dict(self, include_text=False, compact_match_result=True):
+        d = {}
+        d["doc"] = self.doc.to_dict(include_text=include_text, use_hash=True)
+        d["pat_results"] = [
+            [
+                k.to_dict(),
+                [
+                    v.to_dict(
+                        include_doc=(not compact_match_result),
+                        include_pattern=(not compact_match_result),
+                    )
+                    for v in vlist
+                ],
+            ]
+            for k, vlist in self.pat_results.items()
+        ]
+        if hasattr(self, "section_sep"):
+            d["section_sep"] = self.section_sep
+        return d
+
+    @classmethod
+    def from_dict(cls, d):
+        """Create a DocResult from a dict"""
+        doc = Document.from_dict(d["doc"])
+        pat_results_dict = d.get("pat_results", {})
+        pat_results = {}
+        for p_r in pat_results_dict:
+            pat_obj = MatchPattern.from_dict(p_r[0])
+            pat_results[pat_obj] = [
+                MatchResult.from_dict(r, default_doc=doc, default_pattern=pat_obj)
+                for r in p_r[1]
+            ]
+        section_sep = d.get("section_sep", 0)
+        return cls(doc, pat_results, section_sep=section_sep)
 
 
 class DocSectResult(BaseResult):
@@ -159,23 +196,25 @@ class DocSectResult(BaseResult):
 
     def start(self, pad=None):
         pad = pad if pad is not None else self.start_pad
-        return max(0, min(r.start() for r in self.results) - pad)
+        return max(0, min(r.start for r in self.results) - pad)
 
     def end(self, pad=None):
         pad = pad if pad is not None else self.end_pad
-        return min(len(self.doc.text), max(r.end() for r in self.results) + pad)
+        return min(len(self.doc.text), max(r.end for r in self.results) + pad)
 
     def summarize_match_result_terms(
         self,
-        asconcept_count: bool = False,
-        ascounter: bool = True,
+        concept_key: bool = False,
+        counter_value: bool = True,
+        counter_value_as_dict: bool = True,
         fold_case: bool = True,
     ):
         "Summarize a list of match results, returning as a dictionary keyed by match pattern"
         return summarize_match_result_terms(
             self.results,
-            asconcept_count=asconcept_count,
-            ascounter=ascounter,
+            concept_key=concept_key,
+            counter_value=counter_value,
+            counter_value_as_dict=counter_value_as_dict,
             fold_case=fold_case,
         )
 
@@ -194,7 +233,7 @@ class DocSectResult(BaseResult):
         )
         for mr in self.results:
             mrtext = mr.astext(uppercase_match=uppercase_match)
-            rstr += "\n" + " " * (mr.start() - start) + mrtext
+            rstr += "\n" + " " * (mr.start - start) + mrtext
         rstr += "\n"
         return rstr
 
@@ -204,37 +243,68 @@ class MatchResult(BaseResult):
 
     def __init__(self, doc: Document, pattern: MatchPattern, match: re.Match):
         self.match = match
+        self.start = match.start()
+        self.end = match.end()
+        self.match_text = match.group(0)
         self.pattern = pattern
         self.doc = doc
 
-    def start(self):
-        return self.match.start()
-
-    def end(self):
-        return self.match.end()
-
     def astext(self, uppercase_match=False):
         "Text string for match"
-        text = self.doc.text[self.match.start() : self.match.end()]
-        assert text == self.match.group(0)
+        text = self.match_text
         if uppercase_match:
             text = text.upper()
         return text + f"[{self.pattern.concept}]"
 
+    def to_dict(self, include_doc=True, include_pattern=True):
+        d = {}
+        d["start"] = self.start
+        d["end"] = self.end
+        d["match_text"] = self.match_text
+        if include_pattern:
+            d["pattern"] = self.pattern.to_dict()
+        if include_doc:
+            d["doc"] = self.doc.to_dict()
+        return d
+
+    @classmethod
+    def from_dict(cls, d, default_pattern=None, default_doc=None):
+        """Create a MatchResult from a dict"""
+        obj = cls.__new__(cls)
+        super(MatchResult, obj).__init__()
+        obj.match = None
+        obj.start = d["start"]
+        obj.end = d["end"]
+        obj.match_text = d["match_text"]
+        pattern = d.get("pattern")
+        if pattern is not None:
+            obj.pattern = MatchPattern.from_dict(pattern)
+        elif default_pattern is not None:
+            obj.pattern = default_pattern
+        else:
+            obj.pattern = None
+        doc = d.get("doc")
+        if doc is not None:
+            obj.doc = Document.from_dict(doc)
+        elif default_doc is not None:
+            obj.doc = default_doc
+        else:
+            obj.doc = None
+        return obj
+
     def __str__(self):
-        return f"<{__class__.__name__} {(self.start(), self.end())} {self.astext()}>"
+        return f"<{__class__.__name__} {(self.start, self.end)} {self.astext()}>"
 
 
 def summarize_match_result_terms(
     match_results: Union[list, dict],
-    asconcept_count: bool = False,
-    ascounter: bool = True,
+    concept_key: bool = False,
+    counter_value: bool = True,
+    counter_value_as_dict: bool = True,
     fold_case: bool = True,
 ):
     "Summarize a list of match results, returning as a dictionary keyed by match pattern"
-    if asconcept_count:
-        ascounter = True
-    if ascounter:
+    if counter_value:
         results = defaultdict(Counter)
     else:
         results = defaultdict(list)
@@ -242,50 +312,56 @@ def summarize_match_result_terms(
         for pat, mr_list in match_results.items():
             for mr in mr_list:
                 # print('DEBUG', 'MR', (mr.pattern.pattern, mr.match.group(0), mr.start(), mr.end()))
-                if ascounter:
+                if counter_value:
                     results[pat][mr.match.group(0)] += 1
                 else:
                     results[pat].append(mr.match.group(0))
     else:
         for mr in match_results:
             # print('DEBUG', 'MR', (mr.pattern.pattern, mr.match.group(0), mr.start(), mr.end()))
-            if ascounter:
+            if counter_value:
                 results[mr.pattern][mr.match.group(0)] += 1
             else:
                 results[mr.pattern].append(mr.match.group(0))
-    if not fold_case or not ascounter:
-        if asconcept_count:
+    # Maybe fold case
+    if fold_case and counter_value:
+        newresults = {}
+        for pat, ctr in results.items():
+            if not (pat.flags & re.IGNORECASE):
+                # only fold case if the pattern had ignore case flag set (i.e, was case insensitive)
+                newresults[pat] = ctr
+                continue
+            equivalent_terms = defaultdict(list)
+            for term in ctr:
+                equivalent_terms[term.casefold()].append(term)
+            folded_terms = {}
+            for lower, term_list in equivalent_terms.items():
+                if len(term_list) == 1:
+                    continue
+                key = max(
+                    term_list
+                )  # max takes the highest ord value, so prefer lower case or accented
+                for term in term_list:
+                    if term != key:
+                        folded_terms[term] = key
+            newctr = Counter()
+            for term, val in ctr.items():
+                newctr[folded_terms.get(term, term)] += val
+            newresults[pat] = newctr
+        results = newresults
+    # Return results
+    if concept_key:
+        if counter_value and counter_value_as_dict:
             return {
                 pattern.concept: dict(ctr.most_common(None))
                 for pattern, ctr in results.items()
             }
-        return dict(results)
-    newresults = {}
-    for pat, ctr in results.items():
-        if not (pat.flags & re.IGNORECASE):
-            # only fold case if the pattern had ignore case flag set (i.e, was case insensitive)
-            newresults[pat] = ctr
-            continue
-        equivalent_terms = defaultdict(list)
-        for term in ctr:
-            equivalent_terms[term.casefold()].append(term)
-        folded_terms = {}
-        for lower, term_list in equivalent_terms.items():
-            if len(term_list) == 1:
-                continue
-            key = max(
-                term_list
-            )  # max takes the highest ord value, so prefer lower case or accented
-            for term in term_list:
-                if term != key:
-                    folded_terms[term] = key
-        newctr = Counter()
-        for term, val in ctr.items():
-            newctr[folded_terms.get(term, term)] += val
-        newresults[pat] = newctr
-    if asconcept_count:
-        return {
-            pattern.concept: dict(ctr.most_common(None))
-            for pattern, ctr in newresults.items()
-        }
-    return newresults
+        else:
+            return {pattern.concept: vals for pattern, vals in results.items()}
+    else:
+        if counter_value and counter_value_as_dict:
+            return {
+                pattern: dict(ctr.most_common(None)) for pattern, ctr in results.items()
+            }
+        else:
+            return results
