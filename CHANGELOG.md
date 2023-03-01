@@ -11,6 +11,11 @@
 ## [Unreleased]
 - Items in development
 
+## [0.3.0] - 2023-02-28 Mark Graves
+### Added
+- Utility functions for using pandas and matplotlib
+- Serialize doc results
+
 ## [0.2.0] - 2023-02-21 Mark Graves
 ### Added
 - Improvements to displaying html spans
