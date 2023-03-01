@@ -122,3 +122,9 @@ def search_dataframe_concepts(
         temp_df[text_colname] = doc_results_text(doc_results_s, text_colname)
     temp_df[doc_results_colname] = doc_results_s
     return temp_df
+
+
+def search_results_default_handler(obj):
+    """Handler for pandas dataframe to json for search results"""
+    if isinstance(obj, DocResult):
+        return obj.to_dict()
