@@ -178,6 +178,17 @@ class DocResult(BaseResult):
         section_sep = d.get("section_sep", 0)
         return cls(doc, pat_results, section_sep=section_sep)
 
+    def __contains__(self, concept_or_match_pattern):
+        """True iff doc result has a match pattern for the concept or match pattern"""
+        if isinstance(concept_or_match_pattern, str):
+            return concept_or_match_pattern in [
+                pat.concept for pat in self.pat_results.keys()
+            ]
+        elif isinstance(concept_or_match_pattern, MatchPattern):
+            return concept_or_match_pattern in self.pat_results
+        else:
+            return False
+
 
 class DocSectResult(BaseResult):
     "Results of pattern matches in a document section"
@@ -351,13 +362,20 @@ def summarize_match_result_terms(
         results = newresults
     # Return results
     if concept_key:
+        # First, merge multiple patterns for same concept
+        newresults = {}
+        for pat, ctr in results.items():
+            if pat.concept in newresults:
+                newresults[pat.concept].update(ctr)
+            else:
+                newresults[pat.concept] = ctr
         if counter_value and counter_value_as_dict:
             return {
-                pattern.concept: dict(ctr.most_common(None))
-                for pattern, ctr in results.items()
+                concept: dict(ctr.most_common(None))
+                for concept, ctr in newresults.items()
             }
         else:
-            return {pattern.concept: vals for pattern, vals in results.items()}
+            return newresults
     else:
         if counter_value and counter_value_as_dict:
             return {

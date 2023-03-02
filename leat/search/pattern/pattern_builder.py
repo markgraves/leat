@@ -83,7 +83,17 @@ def build_match_patterns_pattern(config_data, source_name="", metadata={}):
     return result
 
 
-def create_terms_pattern(terms):
+def create_terms_pattern(terms, allow_wildcards=True):
     "Create a regex pattern string from a list of terms"
     if terms:
+        if allow_wildcards:
+            return (
+                r"\b"
+                + r"\b|\b".join(
+                    re.escape(t).replace(r"\*", r"\w*").replace(r"\?", r"\w?")
+                    for t in terms
+                    if t
+                )
+                + r"\b"
+            )
         return r"\b" + r"\b|\b".join(re.escape(t) for t in terms if t) + r"\b"
