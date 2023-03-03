@@ -47,13 +47,16 @@ class Search:
         elif isinstance(config, Path) or isinstance(config, str):
             self._config = ConfigData(config)
         assert isinstance(self._config, ConfigData)
-        match_patterns = PatternBuilder.build(self._config)
+        if self.sparse_data:
+            match_patterns, super_pattern = PatternBuilder.build(
+                self._config, super_pattern=True
+            )
+        else:
+            match_patterns = PatternBuilder.build(self._config)
         self.match_patterns = match_patterns
         if self.sparse_data and len(match_patterns) > 4:
             flag = re.I
-            self._super_pattern = re.compile(
-                "|".join(mp.pattern for mp in match_patterns), flags=flag
-            )
+            self._super_pattern = re.compile(super_pattern, flags=flag)
 
     @property
     def doc_store(self):
