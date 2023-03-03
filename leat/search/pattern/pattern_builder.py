@@ -96,4 +96,4 @@ def create_terms_pattern(terms, allow_wildcards=True):
                 )
                 + r"\b"
             )
-        return r"\b" + r"\b|\b".join(re.escape(t) for t in terms if t) + r"\b"
+        return r"\b(?:" + r"|".join(re.escape(t) for t in terms if t) + r")\b"
