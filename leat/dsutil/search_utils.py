@@ -4,6 +4,8 @@ from collections import Counter
 
 import pandas as pd
 
+from ..search.result import DocResult
+
 
 def counter_to_text(ctr, sep=","):
     "Summarize a counter (or similar dictionary) as a text string"

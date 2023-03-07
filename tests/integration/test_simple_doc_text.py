@@ -18,7 +18,7 @@ MATCH_RESULT_TERM_RESULTS = {
         "precision": 1,
         "specificity": 1,
     },
-    "Data Ethics": {"equity": 1},
+    "Data Ethics": {"Fairness": 1, "bias": 1, "equity": 1},
     "Ethical Principles": {"justice": 2},
     "Test": {"2022": 1},
 }

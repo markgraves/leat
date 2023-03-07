@@ -34,13 +34,13 @@ class ConfigData:
     ):
         self.data: dict = {}
         self.config_file = None
-        self.short_name: str = 'Empty'
+        self.short_name: str = "Empty"
         if predefined_configuration:
             config_file = PredefinedConfigurations.data.get(predefined_configuration)
             if config_file:
                 if config_file.exists():
                     self.load_config_file(config_file, json_config_file=None)
-                    self.short_name = '#' + predefined_configuration
+                    self.short_name = "#" + predefined_configuration
                 else:
                     print(
                         "ERROR:",
@@ -171,7 +171,7 @@ class ConfigData:
         return True
 
     def __str__(self):
-        return f'<{__class__.__name__} {self.short_name}>'
+        return f"<{__class__.__name__} {self.short_name}>"
 
 
 class PatternConcept(NamedTuple):
@@ -239,9 +239,31 @@ def read_config_sheet_pattern(sheet):
                 flags = 0  # re.NOFLAG # noflag in python 3.11
         else:
             flags = 0  # re.NOFLAG # noflag in python 3.11
-        sheetvalues[
-            PatternConcept(concept=row[column_name_map["CONCEPT"]].value, flags=flags)
-        ].append(row[column_name_map["PATTERN"]].value)
+        concept_value = row[column_name_map["CONCEPT"]].value
+        pattern_value = row[column_name_map["PATTERN"]].value
+        if concept_value is None or concept_value == "null" or pattern_value is None:
+            if concept_value is None and pattern_value is None:
+                # quietly skip blank line
+                pass
+            elif concept_value is None or concept_value == "null":
+                print(
+                    "Error: Pattern sheet",
+                    sn,
+                    "missing concept for pattern=",
+                    pattern_value,
+                )
+            else:
+                print(
+                    "Error: Pattern sheet",
+                    sn,
+                    "missing pattern for concept",
+                    pattern_value,
+                )
+            continue
+        else:
+            sheetvalues[PatternConcept(concept=concept_value, flags=flags)].append(
+                pattern_value
+            )
     return dict(sheetvalues)
 
 

@@ -11,6 +11,11 @@
 ## [Unreleased]
 - Items in development
 
+## [0.4.0] - 2023-03-02 Mark Graves
+### Added
+- wildcards in search configuration
+- efficiency improvements in search
+
 ## [0.3.0] - 2023-02-28 Mark Graves
 ### Added
 - Utility functions for using pandas and matplotlib

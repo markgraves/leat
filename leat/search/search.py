@@ -3,6 +3,7 @@
 from collections import defaultdict
 from pathlib import Path
 from typing import Optional, Union
+import re
 
 from .config import ConfigData
 from .pattern import PatternBuilder
@@ -20,8 +21,11 @@ class Search:
         doc_store: Optional[Union[DocStore, Path, list, str]] = None,
         predefined_configuration: Optional[str] = None,
         default_section_sep: Optional[int] = 125,
+        sparse_data=False,
     ):
         self.match_patterns: Optional[list] = None
+        self.sparse_data = sparse_data
+        self._super_pattern = None
         if predefined_configuration:
             self.config = ConfigData(predefined_configuration=predefined_configuration)
         else:
@@ -43,8 +47,16 @@ class Search:
         elif isinstance(config, Path) or isinstance(config, str):
             self._config = ConfigData(config)
         assert isinstance(self._config, ConfigData)
-        match_patterns = PatternBuilder.build(self._config)
+        if self.sparse_data:
+            match_patterns, super_pattern = PatternBuilder.build(
+                self._config, super_pattern=True
+            )
+        else:
+            match_patterns = PatternBuilder.build(self._config)
         self.match_patterns = match_patterns
+        if self.sparse_data and len(match_patterns) > 4:
+            flag = re.I
+            self._super_pattern = re.compile(super_pattern, flags=flag)
 
     @property
     def doc_store(self):
@@ -95,6 +107,11 @@ class Search:
     def search_document(self, doc: Document, section_sep: Optional[int] = None):
         "Search a document for all match patterns"
         # print("INFO:", doc.name, len(doc.text))
+        if (
+            self._super_pattern is not None
+            and self._super_pattern.search(doc.text) is None
+        ):
+            return
         if section_sep is None:
             section_sep = self.default_section_sep
         docresults = defaultdict(list)
