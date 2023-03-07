@@ -113,7 +113,7 @@ def build_match_patterns_pattern(config_data, source_name="", metadata={}):
     return result
 
 
-def XXcreate_terms_pattern(terms, allow_wildcards=True):
+def create_terms_pattern_wo_trie(terms, allow_wildcards=True):
     "Create a regex pattern string from a list of terms"
     if terms:
         if allow_wildcards:
