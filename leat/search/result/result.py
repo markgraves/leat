@@ -34,6 +34,7 @@ class DocResult(BaseResult):
         self.pat_results = clean_results
         self.sect_results: Optional[Sequence["DocSectResult"]] = None
         if section_sep:
+            # print('DEBUG: Sectioning results', section_sep)
             self.section_results(section_sep)
 
     def section_results(self, section_sep: int = 125):
