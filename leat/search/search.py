@@ -151,3 +151,7 @@ class Search:
             return f'<{__class__.__name__} {self.config.short_name}({len(self.match_patterns)}) {",".join(datadirs)[:30]}>'
         except AttributeError:
             return f'<{__class__.__name__} None(0) {",".join(datadirs)[:30]}>'
+
+    def all_concepts(self):
+        """Returns list of all concepts to be searched"""
+        return list(set(mp.concept for mp in self.match_patterns))

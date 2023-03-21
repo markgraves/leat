@@ -9,7 +9,7 @@ from ..search.result import DocResult
 
 def counter_to_text(ctr, sep=","):
     "Summarize a counter (or similar dictionary) as a text string"
-    if not isinstance(ctr, dict):
+    if not isinstance(ctr, dict) or not ctr:
         return ""
     return sep.join(f"{term}({count})" for term, count in ctr.items())
 
@@ -91,7 +91,7 @@ def concept_results_dataframe(
     )
     concept_matches_df = pd.DataFrame.from_records(
         temp_concept_matches.tolist(), index=temp_concept_matches.index
-    )
+    ).applymap(lambda x: x if pd.notnull(x) else {})
     return concept_matches_df
 
 
@@ -100,8 +100,25 @@ def summarize_doc_results_dataframe(
 ):
     "Summarize each cell of counts"
     concept_matches_df = concept_results_dataframe(doc_results_s, fold_case)
-    concept_matches_df = concept_matches_df.applymap(concept_counter_agg_fn)
+    if concept_counter_agg_fn is not None:
+        concept_matches_df = concept_matches_df.applymap(concept_counter_agg_fn)
     return concept_matches_df
+
+
+def expand_doc_results_dataframe(
+    doc_results_s, fold_case: bool = True, filter_columns=[]
+):
+    "Expand doc results to a DataFrame with all keys as columns"
+    concept_matches_df = concept_results_dataframe(doc_results_s, fold_case)
+    if filter_columns:
+        all_concepts = set(concept_matches_df.columns).intersection(filter_columns)
+    else:
+        all_concepts = concept_matches_df.columns
+    return pd.concat(
+        [series_counter_dict_expand(concept_matches_df[col]) for col in all_concepts],
+        keys=all_concepts,
+        axis=1,
+    )
 
 
 def search_dataframe_concepts(
