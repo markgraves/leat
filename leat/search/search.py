@@ -8,8 +8,8 @@ import re
 from .config import ConfigData
 from .pattern import PatternBuilder
 from .result import DocResult
-from ..store.core import Document, DocStore
-from ..store.filesys import LocalFileSys
+from leat.store.core import Document, DocStore
+from leat.store.filesys import LocalFileSys
 
 
 class Search:

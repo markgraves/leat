@@ -4,7 +4,7 @@ from collections import Counter
 
 import pandas as pd
 
-from ..search.result import DocResult
+from leat.search.result import DocResult
 
 
 def counter_to_text(ctr, sep=","):

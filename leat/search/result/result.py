@@ -5,7 +5,7 @@ from collections import defaultdict, Counter
 import re
 from typing import Dict, Optional, Sequence, Union
 
-from ...store.core import Document
+from leat.store.core import Document
 from ..pattern import MatchPattern
 
 
