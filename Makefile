@@ -27,5 +27,8 @@ test:
 	python -m pytest tests/unit/
 	python -m pytest tests/integration/
 
+# Generate documentation
+doc:
+	${MAKE} -C docs html
 
 
