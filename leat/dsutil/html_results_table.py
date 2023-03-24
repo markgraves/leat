@@ -1,7 +1,27 @@
-"""Utilities to visualize document results in html using pandas dataframes"""
+"""
+Utilities to visualize document results in html using pandas dataframes
+
+Main entry functon is `write_dataframe_html`
+
+Example::
+
+  search = Search(configfile)
+  df = dsutil.search_dataframe_concepts(
+           search,
+           original_df,
+           text_colname='text',
+           doc_results_colname='Doc Results'
+       ).copy().drop(columns=['text'])
+  df.set_index('Key', inplace=True)
+  writer = HTMLWriter()
+  with open('temp-results-table.html', 'w') as ofp:
+      dsutil.write_dataframe_html(df, writer, ofp)
+
+"""
 
 import html
 from io import StringIO
+from typing import Optional
 
 HTML_HEAD_CODE_START = """<!doctype html>
 <html lang="en">
@@ -72,7 +92,18 @@ HTML_BODY_END = """
 """
 
 
-def write_table_row(arr, style="", index_in_first_column=True):
+def write_table_row(arr, style: str = "", index_in_first_column: bool = True) -> str:
+    """
+    Write row of html table.
+
+    Args:
+      arr: numpy.array: Array of values for the row
+      style: str: CSS style for row (Default value = "")
+      index_in_first_column: bool: if True, then use index in the first column to create a visibility button for text details (Default value = True)
+
+    Returns:
+      str: HTML for the row (with escaped content)
+    """
     if style:
         result = f'<tr style="{style}"><td>'
     else:
@@ -87,7 +118,26 @@ def write_table_row(arr, style="", index_in_first_column=True):
     return result
 
 
-def write_table_head(arr, rowtag="tr", style="", coltag="th", insert_first_col="+"):
+def write_table_head(
+    arr,
+    rowtag: str = "tr",
+    style: str = "",
+    coltag: str = "th",
+    insert_first_col: str = "+",
+) -> str:
+    """
+    Write head of html table.
+
+    Args:
+      arr: numpy.array: Array of values for the row
+      rowtag: str:  (Default value = "tr")
+      style: str: CSS style for the row (Default value = "")
+      coltag: str:  (Default value = "th")
+      insert_first_col: str: String to insert for the first column, if not empty (Default value = "+")
+
+    Returns:
+      str: HTML for the head row (with escaped content)
+    """
     if style:
         style = f' style="{style}"'
     result = f"<thead><{rowtag}{style}><{coltag}>"
@@ -98,8 +148,19 @@ def write_table_head(arr, rowtag="tr", style="", coltag="th", insert_first_col="
     return result
 
 
-def write_doc_row(arr):
-    # html must be in last column, index in first column
+def write_doc_row(arr) -> str:
+    """
+    Write row of document dataframe table
+
+    Args:
+      arr: numpy.array: Array of values for the row
+
+      Note: In arr, index must be in first column; html for the text details must be in last column,
+
+    Returns:
+      str: HTML for the document row (with escaped content)
+    """
+    #
     # rowtag = '<tr>'
     rowtag = f'<tr id="i{arr[0]}" style="visibility:collapse">'
     # rowtag = '<tr style="visibility:collapse">'
@@ -107,7 +168,19 @@ def write_doc_row(arr):
     return write_table_row(arr[:-1]) + f"\n{rowtag}{celltag}\n" + arr[-1] + "</td></tr>"
 
 
-def write_doc_table(df, stream=None):
+def write_doc_table(df, stream=None) -> Optional[str]:
+    """
+    Write document dataframe table as html
+
+    Dataframe has first column index, last column html for text details, and interleaving values to display in table
+
+    Args:
+      df: pandas.DataFrame: Dataframe to write
+      stream: If None, create String stream and return its value, else write to stream (Default value = None)
+
+    Returns:
+      str | None: If stream is None, return string value, else function just writes to stream
+    """
     if stream is None:
         stream = StringIO()
         return_string = True
@@ -129,9 +202,22 @@ def write_doc_table(df, stream=None):
 
 def write_dataframe_html(
     dataframe, writer, stream=None, doc_results_colname="Doc Results"
-):
-    """Write dataframe to html as interspersed data row and text results row.
-    Doc results can be a list, whose html will be concatenated
+) -> Optional[str]:
+    """
+    Write dataframe to html as interspersed data row and text results row.
+
+    Must have a column with DocResult(s), which will be formatted to html.
+    Doc results can be a list, whose html will be concatenated.
+    (If no DocResults, then pandas.DataFrame.to_html() should be used.)
+
+    Args:
+      dataframe: pandas.DataFrame: Dataframe to write
+      writer: search.writer.HTMLWriter: Writer to format DocResult to html
+      stream: If None, create String stream and return its value, else write to stream (Default value = None)
+      doc_results_colname: Name of the column in the dataframe with a DocResult (or list of DocResult) (Default value = "Doc Results")
+
+    Returns:
+       str | None: If stream is None, return string value, else function just writes to stream
     """
     if stream is None:
         stream = StringIO()

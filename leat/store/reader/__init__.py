@@ -10,6 +10,7 @@ except ModuleNotFoundError:
 
     class PDFReader(BaseReader):
         """Stub for PDF reader"""
+
         def __init__(self, *args):
             print(
                 "WARNING:",
