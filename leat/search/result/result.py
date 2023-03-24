@@ -23,6 +23,7 @@ class DocResult(BaseResult):
         doc: Document,
         pat_results: Dict[MatchPattern, Sequence["MatchResult"]],
         section_sep: int = 0,
+        section_max: int = 0,
     ):
         self.doc = doc
         clean_results = {
@@ -33,15 +34,17 @@ class DocResult(BaseResult):
         }
         self.pat_results = clean_results
         self.sect_results: Optional[Sequence["DocSectResult"]] = None
-        if section_sep:
-            # print('DEBUG: Sectioning results', section_sep)
-            self.section_results(section_sep)
+        if section_sep or section_max:
+            # print('DEBUG: Sectioning results', section_sep, section_max)
+            self.section_results(section_sep, section_max)
 
-    def section_results(self, section_sep: int = 125):
+    def section_results(self, section_sep: int = 125, section_max: int = 0):
         "Divide document into annotated sections separated by sect_sep or more"
         if self.sect_results is not None:
             return self.sect_results
-        windows = self.__class__.bin_sliding_window(self.pat_results, section_sep)
+        windows = self.__class__.bin_sliding_window(
+            self.pat_results, section_sep, section_max=section_max
+        )
         self.sect_results = [DocSectResult(self.doc, w) for w in windows]
 
     def all_results(self, pat=None, concept=""):
@@ -61,7 +64,11 @@ class DocResult(BaseResult):
 
     @staticmethod
     def bin_sliding_window(
-        results, section_sep=125, sect_start_pad=20, sect_end_pad=35
+        results,
+        section_sep=125,
+        sect_start_pad=20,
+        sect_end_pad=35,
+        section_max: int = 0,
     ):
         "Build a list of windows from with seperation of distance section_sep or more"
         span_start = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
@@ -69,21 +76,50 @@ class DocResult(BaseResult):
         for k, vlist in results.items():
             for v in vlist:
                 span_start[v.start][v.end][k].append(v)
-        return __class__.bin_sliding_window_span(span_start, section_sep)
+        return __class__.bin_sliding_window_span(
+            span_start, maxsep=section_sep, maxlength=section_max
+        )
 
     @staticmethod
-    def bin_sliding_window_span(span_keyed_dict, maxsep=1):
-        "Build a list of windows from dict {start: end: key: spans} with seperation of distance section_sep or more"
+    def bin_sliding_window_span(
+        span_keyed_dict, maxsep: int = 1, maxlength: Optional[int] = None
+    ):
+        "Build a list of windows from dict {start: end: key: spans} with separation of distance section_sep or more"
         last = -1
+        start = 0
         results = []
         current = []
         for i in sorted(span_keyed_dict):
+            if not current:
+                start = i
             if last + maxsep < i:
                 if current:
                     results.append(current)
                     current = []
+                    start = i
             maxend = max(span_keyed_dict[i].keys())
-            # current[(i, maxend)] = int_keyed_dict[i]
+            if maxlength and (maxend - start) > maxlength:
+                mr1 = list(list(list(span_keyed_dict[i].values())[0].values())[0])[0]
+                try:
+                    name = mr1.doc.name
+                except (AttributeError):
+                    name = mr1
+                if current:
+                    results.append(current)
+                    current = []
+                    print(
+                        "DEBUG",
+                        "For %s, splitting span length %s greater than %s at %s"
+                        % (name, maxend - start, maxlength, i),
+                    )
+                else:
+                    print(
+                        "INFO:",
+                        "For %s, span length %s greater than %s at %s"
+                        % (name, maxend - start, maxlength, i),
+                    )
+                    # print(mr1.doc.text[i:maxend])
+                start = i
             current.extend(
                 v
                 for pat_match in span_keyed_dict[i].values()
@@ -137,11 +173,18 @@ class DocResult(BaseResult):
             fold_case=fold_case,
         )
 
-    def astext(self, uppercase_match=False, start_pad=None, end_pad=None):
-        rstr = str(self.doc.name)
-        rstr += "\n"
+    def astext(
+        self, uppercase_match=False, start_pad=None, end_pad=None, include_labels=True
+    ):
+        if include_labels:
+            rstr = str(self.doc.name)
+            rstr += "\n"
+        else:
+            rstr = ""
         for sect_result in self.sect_results:
-            rstr += sect_result.astext(start_pad=start_pad, end_pad=end_pad)
+            rstr += sect_result.astext(
+                start_pad=start_pad, end_pad=end_pad, include_labels=include_labels
+            )
         return rstr
 
     def to_dict(self, include_text=False, compact_match_result=True):
@@ -230,7 +273,9 @@ class DocSectResult(BaseResult):
             fold_case=fold_case,
         )
 
-    def astext(self, uppercase_match=False, start_pad=None, end_pad=None):
+    def astext(
+        self, uppercase_match=False, start_pad=None, end_pad=None, include_labels=True
+    ):
         "Text string for section with matches"
         start_pad = start_pad if start_pad is not None else self.start_pad
         end_pad = end_pad if end_pad is not None else self.end_pad
@@ -243,8 +288,13 @@ class DocSectResult(BaseResult):
             .replace("\f", " ")
             .replace("\t", " ")
         )
+        if not include_labels:
+            rstr += "\n"
+            return rstr
         for mr in self.results:
-            mrtext = mr.astext(uppercase_match=uppercase_match)
+            mrtext = mr.astext(
+                uppercase_match=uppercase_match, include_labels=include_labels
+            )
             rstr += "\n" + " " * (mr.start - start) + mrtext
         rstr += "\n"
         return rstr
@@ -261,12 +311,12 @@ class MatchResult(BaseResult):
         self.pattern = pattern
         self.doc = doc
 
-    def astext(self, uppercase_match=False):
+    def astext(self, uppercase_match=False, include_labels=True):
         "Text string for match"
         text = self.match_text
         if uppercase_match:
             text = text.upper()
-        return text + f"[{self.pattern.concept}]"
+        return text + f"[{self.pattern.concept}]" if include_labels else text
 
     def to_dict(self, include_doc=True, include_pattern=True):
         d = {}

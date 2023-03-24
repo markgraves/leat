@@ -21,6 +21,7 @@ class Search:
         doc_store: Optional[Union[DocStore, Path, list, str]] = None,
         predefined_configuration: Optional[str] = None,
         default_section_sep: Optional[int] = 125,
+        default_section_max: int = 0,
         sparse_data=False,
     ):
         self.match_patterns: Optional[list] = None
@@ -32,6 +33,7 @@ class Search:
             self.config = config
         self.doc_store = doc_store
         self.default_section_sep = default_section_sep
+        self.default_section_max = default_section_max
 
     @property
     def config(self):
@@ -90,10 +92,14 @@ class Search:
             print("WARN:", "Unknown doc store in search:", doc_store)
             self._doc_store = None
 
-    def search_documents(self, section_sep: Optional[int] = None):
+    def search_documents(
+        self, section_sep: Optional[int] = None, section_max: Optional[int] = None
+    ):
         "Search all documents from document store for all match patterns"
         if section_sep is None:
             section_sep = self.default_section_sep
+        if section_max is None:
+            section_max = self.default_section_max
         if self.doc_store is None or self.doc_store.filesys is None:
             print("WARN:", "No documents to search")
             yield from []
@@ -102,9 +108,16 @@ class Search:
             yield from []
         else:
             for doc in self.doc_store:
-                yield self.search_document(doc, section_sep=section_sep)
+                yield self.search_document(
+                    doc, section_sep=section_sep, section_max=section_max
+                )
 
-    def search_document(self, doc: Document, section_sep: Optional[int] = None):
+    def search_document(
+        self,
+        doc: Document,
+        section_sep: Optional[int] = None,
+        section_max: Optional[int] = None,
+    ):
         "Search a document for all match patterns"
         # print("INFO:", doc.name, len(doc.text))
         if (
@@ -114,13 +127,17 @@ class Search:
             return
         if section_sep is None:
             section_sep = self.default_section_sep
+        if section_max is None:
+            section_max = self.default_section_max
         docresults = defaultdict(list)
         for pattern in self.match_patterns:
             matches = list(pattern.finditer(doc.text))
             if matches:
                 docresults[pattern].extend(matches)
         if docresults:
-            return DocResult(doc, dict(docresults), section_sep=section_sep)
+            return DocResult(
+                doc, dict(docresults), section_sep=section_sep, section_max=section_max
+            )
 
     def read_search_document(
         self, file: Union[Path, str], section_sep: Optional[int] = None

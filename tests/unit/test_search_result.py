@@ -24,6 +24,15 @@ def test_bin_sliding_window_span():
     ) == [["x", "y", "w"]]
 
 
+def test_bin_sliding_window_span_max_sep():
+    assert DocResult.bin_sliding_window_span(
+        {1: {3: {"a": ["x", "y"]}}, 4: {7: {"a": ["w"]}}}, maxlength=3
+    ) == [["x", "y"], ["w"]]
+    assert DocResult.bin_sliding_window_span(
+        {1: {3: {"a": ["x", "y"]}}, 4: {7: {"a": ["w"]}}}
+    ) == [["x", "y", "w"]]
+
+
 ## sweep spans
 
 PARENS_RE = r"\(.*?\)"
