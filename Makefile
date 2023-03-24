@@ -31,4 +31,7 @@ test:
 doc:
 	${MAKE} -C docs html
 
+clean-doc:
+	${MAKE} -C docs clean html
+
 
