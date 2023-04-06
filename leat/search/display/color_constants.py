@@ -181,3 +181,4 @@ CSS3_NAMES_TO_HEX = {
     "yellow": "#ffff00",
     "yellowgreen": "#9acd32",
 }
+"""Mapping from CSS3 color names to Hex codes"""

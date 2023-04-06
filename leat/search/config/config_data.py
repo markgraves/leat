@@ -5,7 +5,7 @@ import csv
 import json
 from pathlib import Path
 import re
-from typing import NamedTuple, Optional, Union
+from typing import NamedTuple, Optional, Union, Sequence
 
 from .predefined_configurations import PredefinedConfigurations
 
@@ -13,6 +13,7 @@ try:
     import openpyxl
 
     EXCEL_READ_AVAILABLE = True
+    """True iff Excel reading is supported"""
 except ModuleNotFoundError:
     print(
         "WARNING:",
@@ -22,7 +23,18 @@ except ModuleNotFoundError:
 
 
 class ConfigData:
-    "Configuration data for search"
+    """Configuration data for search
+
+    Attributes:
+      config_file: str | Path | None: Path to the configuration file
+      short_name: str: Short name of the configuration, e.g, name of predefined configuration or stem of filename
+      data: dict: Configuration data loaded from the file
+
+    Example:
+      `ConfigData(config_file="SearchConfig.xlsx")`
+      `ConfigData(predefined_configuration='BasicSearch')`
+
+    """
 
     def __init__(
         self,
@@ -32,6 +44,22 @@ class ConfigData:
         json_config_file: Optional[Union[str, Path]] = None,
         predefined_configuration: Optional[str] = None,
     ):
+        """
+        Creates ConfigData by loading a user-specified or predefined configuration file.
+        User files can be Excel, CSV, or a json version of ConfigData
+
+        Args:
+          config_file: str | Path | None: Path to the configuration file  (Default value = None)
+          save_json_if_outdated: bool: Save fresh json if the config file is new (Default value = True)
+          load_json_if_current: bool: Load json file if as new as config file (Default value = True)
+          json_config_file: str | Path | None: Path to the json file (Default value = None)
+          predefined_configuration: str | None: Name of a predefined configuration (Default value = None)
+
+        Note: Predefined configurations are in core.predefined_configurations
+
+        Example:
+
+        """
         self.data: dict = {}
         self.config_file = None
         self.short_name: str = "Empty"
@@ -68,6 +96,15 @@ class ConfigData:
         load_json_if_current: bool = True,
         json_config_file: Optional[Union[str, Path]] = None,
     ):
+        """
+        Loads ConfigData from either an Excel or CSV configuration file, or a saved json version of that data
+
+        Args:
+          config_file: str | Path | None: Path to the configuration file  (Default value = None)
+          save_json_if_outdated: bool: Save fresh json if the config file is new (Default value = True)
+          load_json_if_current: bool: Load json file if as new as config file (Default value = True)
+          json_config_file: str | Path | None: Path to the json file (Default value = None)
+        """
         if not config_file:
             if json_config_file:
                 return self.load_config_file_json(json_config_file)
@@ -106,12 +143,29 @@ class ConfigData:
             self.write_config_data_json(json_config_file)
 
     @staticmethod
-    def get_config_file_type(filename):
+    def get_config_file_type(filename: [Union[str, Path]]):
+        """
+        Returns the type (extension) of a configuration file, i.e., xlsx, csv, json
+
+        Args:
+          filename: str | Path: Path to the configuration file
+
+        Returns:
+          str: Type of the file (extension)
+        """
         fileext = Path(filename).suffix.strip(".")
         return fileext
 
-    def load_config_file_csv(self, filename):
-        "Read csv configuration file, returning config dict"
+    def load_config_file_csv(self, filename: [Union[str, Path]]) -> bool:
+        """
+        Read csv configuration file, storing the resulting config dict in the instance
+
+        Args:
+          filename: str | Path: Path to the configuration file
+
+        Returns:
+          bool: True if file was loaded, otherwise `open` will error
+        """
         print("INFO:", "Loading csv config file:", filename)
         with open(filename, "r", encoding="utf-8-sig") as ifp:
             reader = csv.DictReader(ifp)
@@ -125,8 +179,16 @@ class ConfigData:
         self.short_name = filename.stem
         return True
 
-    def load_config_file_xlsx(self, filename):
-        "Load Excel xlsx configuration file"
+    def load_config_file_xlsx(self, filename: [Union[str, Path]]) -> bool:
+        """
+        Load Excel xlsx configuration file
+
+        Args:
+          filename: str | Path: Path to the configuration file
+
+        Returns:
+          bool: True if file was loaded, otherwise `openpyxl` will error
+        """
         print("INFO:", "Loading xlsx config file:", filename)
         wb = openpyxl.load_workbook(filename, data_only=True)
         result = {}
@@ -142,8 +204,16 @@ class ConfigData:
         return True
 
     @staticmethod
-    def get_sheetname_type(sheet_name):
-        "Return the type of sheet name, e.g., SEARCH, PATTERN, or UNKNOWN"
+    def get_sheetname_type(sheet_name: str) -> str:
+        """
+        Return the type of sheet name, e.g., SEARCH, PATTERN, or UNKNOWN
+
+        Args:
+          sheet_name: str: Name of an openpyxl worksheet
+
+        Returns:
+          str: Type of the sheet, namely, SEARCH, PATTERN, or UNKNOWN
+        """
         lower = sheet_name.casefold()
         if "search" in lower:
             return "SEARCH"
@@ -151,15 +221,31 @@ class ConfigData:
             return "PATTERN"
         return "UNKNOWN"
 
-    def write_config_data_json(self, filename):
-        "Write config information as json"
+    def write_config_data_json(self, filename: [Union[str, Path]]):
+        """
+        Write config information as json
+
+        Args:
+          filename: str | Path: Path to the json configuration file
+
+        Returns:
+          bool: True if file was created, otherwise `open` will error
+        """
         newconfig = {k: config_json_format_simplify(v) for k, v in self.data.items()}
         print("INFO:", "Saving json config file", filename)
         with open(filename, "w") as ofp:
             json.dump(newconfig, ofp, indent=4)
 
-    def load_config_file_json(self, filename):
-        "Read config information from json file"
+    def load_config_file_json(self, filename: [Union[str, Path]]) -> bool:
+        """
+        Read config information from json file
+
+        Args:
+          filename: str | Path: Path to the json configuration file
+
+        Returns:
+          bool: True if file was loaded, otherwise `open` will error
+        """
         print("INFO:", "Loading json config file:", filename)
         with open(filename, "r") as ifp:
             data = json.load(ifp)
@@ -171,11 +257,19 @@ class ConfigData:
         return True
 
     def __str__(self):
+        """Format instance as a string"""
         return f"<{__class__.__name__} {self.short_name}>"
 
 
 class PatternConcept(NamedTuple):
-    "Concept for pattern that tracks flag for matching"
+    """
+    Concept for pattern, which also tracks flag for matching
+
+    Attributes:
+      concept: str: Name of the concept
+      flags: int: re.FLAGS
+    """
+
     concept: str
     flags: int = 0  # re.NOFLAG
 
@@ -190,10 +284,19 @@ CLEAN_COLUMN_NAMES_MAPPING = {
     "case insens": "CASE INSENSITIVE",
     "ignore case": "CASE INSENSITIVE",
 }
+"""Maps from terms used in column names to clean strings"""
 
 
-def clean_column_name_index(colnames):
-    "Clean and index column names for config sheets"
+def clean_column_name_index(colnames: Sequence[str]) -> dict:
+    """
+    Clean and index column names for config sheets
+
+    Args:
+      colnames: Sequence[str]:
+
+    Returns:
+      dict: Mapping from clean column names to index in the config sheet for that column
+    """
     result = {}
     for i, cn in enumerate(colnames):
         cn_lower = cn.casefold().strip()
@@ -206,8 +309,16 @@ def clean_column_name_index(colnames):
     return result
 
 
-def read_config_sheet_search(sheet):
-    "Read config search sheet, returning dict of values"
+def read_config_sheet_search(sheet) -> dict:
+    """
+    Read config search sheet, returning dict of values
+
+    Args:
+      sheet: openpyxl..Worksheet: Worksheet in openpyxl with search terms
+
+    Returns:
+      dict: Dictionary mapping column names (concepts) to the (stripped) string values in the column
+    """
     sheetvalues = {"_sheet_type": "SEARCH"}
     for col in sheet.iter_cols():
         if col[0].value:
@@ -215,8 +326,16 @@ def read_config_sheet_search(sheet):
     return sheetvalues
 
 
-def read_config_sheet_pattern(sheet):
-    "Read config pattern sheet, returning dict of values"
+def read_config_sheet_pattern(sheet) -> dict:
+    """
+    Read config pattern sheet, returning dict of values
+
+    Args:
+      sheet: openpyxl..Worksheet: Worksheet in openpyxl with patterns
+
+    Returns:
+      dict: Dictionary mapping concepts (with flags, i.e., PatternConcept) to patterns
+    """
     sheetvalues = defaultdict(list)
     sheetvalues["_sheet_type"] = "PATTERN"
     column_name_map = clean_column_name_index(x.value for x in sheet[1])
@@ -267,13 +386,31 @@ def read_config_sheet_pattern(sheet):
     return dict(sheetvalues)
 
 
-def json_config_file_for_excel(excel_filename):
-    "Replaces xlsx filename extension with json"
+def json_config_file_for_excel(excel_filename: Union[Path, str]):
+    """
+    Replaces xlsx filename extension with json
+
+    Args:
+      excel_filename: str | Path: Path to the Excel configuration file
+
+    Returns:
+      path: Path to a similarly located and name file, except with json extension
+    """
     return Path(excel_filename).with_suffix(".json")
 
 
-def config_json_format_simplify(sheet_config):
-    "Hooks to change serialized types"
+def config_json_format_simplify(sheet_config: dict) -> dict:
+    """
+    Hooks to change configuration types for serialization as json
+
+    Changes PatternConcept object to a two-level dict
+
+    Args:
+      sheet_config: dict:
+
+    Returns:
+      dict: Sheet config with simplified types
+    """
     if sheet_config.get("_sheet_type", "") == "PATTERN":
         result = defaultdict(dict)
         for pattern_concept, pats in sheet_config.items():
@@ -287,8 +424,18 @@ def config_json_format_simplify(sheet_config):
         return sheet_config
 
 
-def config_json_format_restore(sheet_config):
-    "Hooks to revert serialized type changes"
+def config_json_format_restore(sheet_config: dict) -> dict:
+    """
+    Hooks to revert serialized type changes
+
+    Reverses changes in `config_json_format_simplify`
+
+    Args:
+      sheet_config: dict: Configuration dict previously prepared for serialization
+
+    Returns:
+      dict: With type simplifications undone
+    """
     if sheet_config.get("_sheet_type", "") == "PATTERN":
         result = defaultdict(list)
         for concept, flag_sub_dict in sheet_config.items():

@@ -10,7 +10,7 @@ from ..reader import TextReader, PDFReader
 class DocStore:
     """Document Store that encapsulates file operations and the readers that import text from them.
 
-    Args:
+    Attributes:
       filesys: "FileSys":  Filesystem from which document files are to be read
       filetypes: Collection[str] | None:  File types to be considered for reading
 
