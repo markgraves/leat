@@ -133,7 +133,7 @@ class LocalDirectory:
             include = [include]
         if type(exclude) == str:
             exclude = [exclude]
-        self.path = path
+        self.path = path.expanduser()
         self.include = include if include is not None else ["*"]
         self.exclude = exclude if exclude is not None else []
         self.recursive = recursive
