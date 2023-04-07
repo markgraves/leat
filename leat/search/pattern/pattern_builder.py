@@ -2,15 +2,30 @@
 
 from collections import defaultdict
 import re
+from typing import Iterable, List, Optional
 
 from ..config import ConfigData
 from . import MatchPattern
 
 
 class PatternBuilder:
+    """Builds match patterns from config data"""
+
     @staticmethod
-    def build(configdata: ConfigData, metadata={}, super_pattern=False):
-        "Build match pattern list from configdata"
+    def build(
+        configdata: ConfigData, metadata: dict = {}, super_pattern: bool = False
+    ) -> List[MatchPattern]:
+        """
+        Build list of match pattern objects from configdata
+
+        Args:
+          configdata: ConfigData: Configuration data with the concept terms and patterns to use
+          metadata: dict: Auxillary data to include in match pattern objects (Default value = {})
+          super_pattern: bool: Whether to also build a pattern that matches any of the pattern text. Useful for efficient filtering of documents (Default value = False)
+
+        Returns:
+          List[MatchPattern]: List of match patterns
+        """
         match_patterns, spattern = build_config_match_patterns(
             configdata.data,
             configdata.config_file,
@@ -25,9 +40,30 @@ class PatternBuilder:
 
 
 def build_config_match_patterns(
-    config, source_name="", metadata={}, super_pattern=False, allow_wildcards=True
+    config: ConfigData,
+    source_name: str = "",
+    metadata: dict = {},
+    super_pattern: bool = False,
+    allow_wildcards: bool = True,
 ):
-    "Build list of match patterns from a config dict"
+    """
+    Build list of match patterns from a config dict
+
+    Args:
+      config: ConfigData: Configuration data with the concept terms and patterns
+      source_name: str: Source (filename) of config data (Default value = "")
+      metadata: dict:  Auxillary data to include in match pattern objects (Default value = {})
+      super_pattern: bool:  Whether to also build a pattern that matches any of the pattern text. (Default value = False)
+      allow_wildcards: bool: Whether to allow wildcards in the terms (Default value = True)
+
+    Returns:
+      List[MatchPattern]: List of match patterns
+      Optional[str]: super pattern (if super_pattern arg is True)
+
+    Note: Wildcards in terms are glob style (i.e., "*" or "?"), and are converted to regex style
+          Matches any "word" char, i.e., alphanumeric or underscore
+
+    """
     if super_pattern:
         super_trie = Trie(allow_wildcards=allow_wildcards)
     else:
@@ -68,9 +104,28 @@ def build_config_match_patterns(
 
 
 def build_match_patterns_search(
-    config_data, source_name="", metadata={}, super_trie=None, allow_wildcards=True
-):
-    "Build list of match patterns from config data for a search sheet"
+    config_data: dict,
+    source_name: str = "",
+    metadata: dict = {},
+    super_trie: Optional["Trie"] = None,
+    allow_wildcards: bool = True,
+) -> List[MatchPattern]:
+    """
+    Build list of match patterns from config data for a search sheet
+
+    Args:
+      config_data: dict: Configuration data for a sheet in ConfigData, which has concept-terms mapping
+      source_name: str: Source (filename) of config data (Default value = "")
+      metadata: dict:  Auxillary data to include in match pattern objects (Default value = {})
+      super_trie: Optional[Trie] Trie in which to build super pattern of all matchin terms. If None, do not build. (Default value = None)
+      allow_wildcards: Whether to allow wildcards in the term patterns and trie. (Default value = True)
+
+    Returns:
+      List[MatchPattern]: List of match patterns matching the terms in the config_data
+
+    Side Effect:
+      Modifies the super_trie, if it is passed
+    """
     result = []
     for concept, term_list in config_data.items():
         if concept.startswith("_"):
@@ -94,8 +149,20 @@ def build_match_patterns_search(
     return result
 
 
-def build_match_patterns_pattern(config_data, source_name="", metadata={}):
-    "Build list of match patterns from config data for a pattern sheet"
+def build_match_patterns_pattern(
+    config_data: dict, source_name: str = "", metadata: dict = {}
+):
+    """
+    Build list of match patterns from config data for a pattern sheet
+
+    Args:
+      config_data: dict: Configuration data for a sheet in ConfigData, which has concept-patterns mapping
+      source_name: Source (filename) of config data (Default value = "")
+      metadata: Auxillary data to include in match pattern objects (Default value = {})
+
+    Returns:
+      List[MatchPattern]: List of match patterns matching the terms in the config_data
+    """
     result = []
     for pattern_concept, pats in config_data.items():
         if type(pattern_concept) == str and pattern_concept.startswith("_"):
@@ -113,8 +180,22 @@ def build_match_patterns_pattern(config_data, source_name="", metadata={}):
     return result
 
 
-def create_terms_pattern_wo_trie(terms, allow_wildcards=True):
-    "Create a regex pattern string from a list of terms"
+def create_terms_pattern_wo_trie(
+    terms: Iterable[str], allow_wildcards: bool = True
+) -> Optional[str]:
+    """
+    Create a regex pattern string from a list of terms
+
+    Args:
+      terms: Iterable[str]: Terms to combine into a pattern (as escaped words with word boundaries)
+      allow_wildcards: Whether patterns are supported in the pattern (Default value = True)
+
+    Returns:
+      str | None: Pattern that matches any of the terms (Or None if no terms are passed)
+
+    Note: Wildcards in terms are glob style (i.e., "*" or "?"), and are converted to regex style
+          Matches any "word" char, i.e., alphanumeric or underscore
+    """
     if terms:
         if allow_wildcards:
             return (
@@ -129,8 +210,26 @@ def create_terms_pattern_wo_trie(terms, allow_wildcards=True):
         return r"\b(?:" + r"|".join(re.escape(t) for t in terms if t) + r")\b"
 
 
-def create_terms_pattern(terms, allow_wildcards=True, super_trie=None):
-    "Create a regex pattern string from a list of terms"
+def create_terms_pattern(
+    terms: Iterable[str],
+    allow_wildcards: bool = True,
+    super_trie: Optional["Trie"] = None,
+) -> str:
+    """
+    Create a regex pattern string from a list of terms
+
+    Args:
+      terms: Iterable[str]: Terms to combine into a pattern (as escaped words with word boundaries)
+      allow_wildcards: Whether patterns are supported in the pattern (Default value = True)
+      super_trie: Optional[Trie] Trie in which to build super pattern of all matchin terms. If None, do not build. (Default value = None)
+
+    Returns:
+      str: Pattern that matches any of the terms
+
+    Note: Wildcards in terms are glob style (i.e., "*" or "?"), and are converted to regex style
+          Matches any "word" char, i.e., alphanumeric or underscore
+
+    """
     if not terms:
         return
     trie = Trie(allow_wildcards=allow_wildcards)
@@ -143,31 +242,68 @@ def create_terms_pattern(terms, allow_wildcards=True, super_trie=None):
 
 
 class Trie:
-    """Regex::Trie in Python. Creates a Trie out of a list of words. The trie can be exported to a Regex pattern.
-    The corresponding Regex should match much faster than a simple Regex union."""
+    """
+    Creates a Trie out of a list of words. The trie can be exported to a Regex pattern.
+    The corresponding Regex should match much faster than a simple Regex union.
+
+    Attributes:
+      allow_wildcards: bool: Whether to allow wildcard (Default value = False)
+      data: dict: The trie
+    """
 
     # Derived from https://stackoverflow.com/questions/42742810/
 
-    def __init__(self, allow_wildcards=False):
+    def __init__(self, allow_wildcards: bool = False):
+        """
+        Create a trie
+
+        Args:
+          allow_wildcards: Whether to allow wildcard (Default value = False)
+        """
         self.data = {}
         self.allow_wildcards = allow_wildcards
 
-    def add(self, word):
+    def add(self, word: str):
+        """
+        Add a word to the trie
+
+        Args:
+          word: A word to add
+        """
         ref = self.data
         for char in word:
             ref[char] = ref.get(char, {})
             ref = ref[char]
         ref[""] = 1
 
-    def dump(self):
+    def dump(self) -> dict:
+        """Returns the trie as a dict"""
         return self.data
 
-    def quote(self, char):
+    def quote(self, char: str) -> str:
+        """
+        Quotes/escapes a char for regex (and expands wildcards)
+
+        Args:
+          char: str: Char to quote (string of length 1)
+
+        Returns:
+          Quoted char
+        """
         if self.allow_wildcards and char in "?*":
             return r"\w" + char
         return re.escape(char)
 
     def _pattern(self, pData):
+        """
+        Converts trie dictionary to a regex pattern string
+
+        Args:
+          pData: dict: Trie dictionary
+
+        Returns:
+          str: Regex pattern string
+        """
         data = pData
         if "" in data and len(data.keys()) == 1:
             return None
@@ -204,5 +340,10 @@ class Trie:
                 result = "(?:%s)?" % result
         return result
 
-    def pattern(self):
+    def pattern(self) -> str:
+        """Converts trie dictionary to a regex pattern string
+
+        Returns:
+          str: Regex pattern string
+        """
         return self._pattern(self.dump())
