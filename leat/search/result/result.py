@@ -11,6 +11,7 @@ from ..pattern import MatchPattern
 
 class BaseResult(ABC):
     """Base class for pattern match results"""
+
     pass
 
 
