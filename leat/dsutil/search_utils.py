@@ -1,9 +1,10 @@
 """Utilities to manage search results using pandas dataframes"""
 
 from collections import Counter
+from operator import itemgetter
 import re
-
 from typing import Optional, Union, List, Iterable, Callable
+
 import pandas as pd
 
 from leat.search.result import DocResult
@@ -126,11 +127,70 @@ def doc_results_text(doc_results_s: pd.Series, text_colname: str = "text") -> pd
       text_colname: str: Column/series name for creating text column/series (Default value = "text")
 
     Returns:
-      Series of Doc Results
+      Series of doc text
     """
     text_s = doc_results_s.apply(lambda r: r.doc.text)
     text_s.name = text_colname
-    return
+    return text_s
+
+
+def doc_results_spans(
+    doc_results_s: pd.Series,
+    include_text: bool = False,
+    sort_results=True,
+    spans_colname: str = "spans",
+    section_results: bool = False,
+) -> pd.Series:
+    """
+    Extract spans from doc results, optionally sorted by start and end
+
+    Args:
+      doc_results_s: pd.Series: Series of Doc Results
+      include_text: bool: Include matched text in result (Default value = False)
+      sort_results: bool: Sort spans by start and end for each doc (Default value = True)
+      spans_colname: str: Column/series name for creating text column/series (Default value = "spans")
+      section_results: bool: If True, split results by section
+
+    Returns:
+      If not sectioned, Series of lists of spans, where span is either (concept, start, end) or (concept, start, end, text)
+      If sectioned, Series of lists of dict with {start, end, spans}
+    """
+
+    def doc_result_spans(results):
+        results = [(mr.pattern.concept, mr.start, mr.end) for mr in results]
+        if sort_results:
+            return sorted(results, key=itemgetter(1, 2))
+        return results
+
+    def doc_result_spans_w_text(results):
+        results = [
+            (mr.pattern.concept, mr.start, mr.end, mr.match_text) for mr in results
+        ]
+        if sort_results:
+            return sorted(results, key=itemgetter(1, 2))
+        return results
+
+    def doc_sect_result_spans(doc_sect_result):
+        result = {"start": doc_sect_result.start(), "end": doc_sect_result.end()}
+        if include_text:
+            result["spans"] = doc_result_spans_w_text(doc_sect_result.results)
+        else:
+            result["spans"] = doc_result_spans(doc_sect_result.results)
+        return result
+
+    if section_results:
+        spans_s = doc_results_s.apply(
+            lambda dr: list(doc_sect_result_spans(dsr) for dsr in dr.section_results())
+        )
+    else:
+        if include_text:
+            spans_s = doc_results_s.apply(
+                lambda x: doc_result_spans_w_text(x.all_results())
+            )
+        else:
+            spans_s = doc_results_s.apply(lambda x: doc_result_spans(x.all_results()))
+    spans_s.name = spans_colname
+    return spans_s
 
 
 def concept_results_dataframe(

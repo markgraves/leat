@@ -2,6 +2,7 @@
 
 from abc import ABC
 from collections import defaultdict, Counter
+import copy
 import re
 from typing import Dict, List, Optional, Sequence, Union
 
@@ -57,24 +58,39 @@ class DocResult(BaseResult):
             self.section_results(section_sep, section_max)
 
     def section_results(
-        self, section_sep: int = 125, section_max: int = 0
-    ) -> Sequence["DocSectResult"]:
+        self,
+        section_sep: int = 125,
+        section_max: int = 0,
+        sect_start_pad: int = 20,
+        sect_end_pad: int = 35,
+        resection: bool = False,
+    ) -> Optional[Sequence["DocSectResult"]]:
         """
         Divide document into annotated sections separated by sect_sep or more
 
         Args:
           section_sep: int: Length of match-less text sufficient to start a new section (Default value = 125)
           section_max: int: Maximum length of a section. (Default value = 0)
+          sect_start_pad: int: Number of characters to include prior to match (Default value = 20)
+          sect_end_pad: int: Number of characters to include after the match  (Default value = 35)
+          resection: bool: If True, section results with new parameters, even if already sectioned (Default value = False)
 
         Returns:
-          List[DocSectResult]: List of results divided into document section
+          Optional[List[DocSectResult]]: List of results divided into document section
         """
-        if self.sect_results is not None:
+        if not resection and self.sect_results is not None:
             return self.sect_results
         windows = self.__class__.bin_sliding_window(
-            self.pat_results, section_sep, section_max=section_max
+            self.pat_results,
+            section_sep,
+            section_max=section_max,
+            sect_start_pad=sect_start_pad,
+            sect_end_pad=sect_end_pad,
         )
-        self.sect_results = [DocSectResult(self.doc, w) for w in windows]
+        self.sect_results = [
+            DocSectResult(self.doc, w, start_pad=sect_start_pad, end_pad=sect_end_pad)
+            for w in windows
+        ]
 
     def all_results(
         self, pat: Optional[MatchPattern] = None, concept: str = ""
@@ -441,6 +457,31 @@ class DocSectResult(BaseResult):
             fold_case=fold_case,
         )
 
+    def convert_to_docresult(self, create_copies=True):
+        """
+        Convert DocSectResult to DocResult, updating doc text and match offsets
+
+        Args:
+          create_copies: bool: If True, create copies of match results, otherwise make destructive edits
+
+        """
+        start = self.start()
+        end = self.end()
+        newdoc = Document(self.doc.name + f"#{start}-{end}", self.doc.text[start:end])
+        pat_results = defaultdict(list)
+        for mr in self.results:
+            if create_copies:
+                newmr = copy.copy(mr)
+            else:
+                newmr = mr
+            newmr.match = None
+            newmr.start -= start
+            newmr.end -= start
+            newmr.doc = newdoc
+            pat_results[newmr.pattern].append(newmr)
+        doc_result = DocResult(newdoc, dict(pat_results))
+        return doc_result
+
     def astext(
         self,
         uppercase_match: bool = False,
@@ -625,18 +666,18 @@ def summarize_match_result_terms(
     if isinstance(match_results, dict):
         for pat, mr_list in match_results.items():
             for mr in mr_list:
-                # print('DEBUG', 'MR', (mr.pattern.pattern, mr.match.group(0), mr.start(), mr.end()))
+                # print('DEBUG', 'MR', (mr.pattern.pattern, mr.match_text, mr.start(), mr.end()))
                 if counter_value:
-                    results[pat][mr.match.group(0)] += 1
+                    results[pat][mr.match_text] += 1
                 else:
-                    results[pat].append(mr.match.group(0))
+                    results[pat].append(mr.match_text)
     else:
         for mr in match_results:
-            # print('DEBUG', 'MR', (mr.pattern.pattern, mr.match.group(0), mr.start(), mr.end()))
+            # print('DEBUG', 'MR', (mr.pattern.pattern, mr.match_text, mr.start(), mr.end()))
             if counter_value:
-                results[mr.pattern][mr.match.group(0)] += 1
+                results[mr.pattern][mr.match.match_text] += 1
             else:
-                results[mr.pattern].append(mr.match.group(0))
+                results[mr.pattern].append(mr.match.match_text)
     # Maybe fold case
     if fold_case and counter_value:
         newresults = {}
