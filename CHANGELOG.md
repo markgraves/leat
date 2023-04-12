@@ -11,6 +11,16 @@
 ## [Unreleased]
 - Items in development
 
+## [0.5.0] - 2023-04-12 Mark Graves
+### Added
+- Improved documentation of code
+- Added sphinx for automatic generation of API documentation
+- Initial requirements file and installation instructions
+
+### Changed
+- Minor improvements to handling document result strings
+- Search results improvements for spans
+
 ## [0.4.0] - 2023-03-02 Mark Graves
 ### Added
 - wildcards in search configuration
