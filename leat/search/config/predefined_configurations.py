@@ -1,18 +1,30 @@
 """Predefined Configurations"""
 
 from pathlib import Path
+from typing import List
+
 
 DEFAULT_CONFIG_DIRECTORY = Path(__file__).parent.parent.parent / "data" / "config"
+"""Base location for configuration files for predefined configurations"""
 
 PREDEFINED_CONFIGURATIONS = {
     "BasicSearch": DEFAULT_CONFIG_DIRECTORY / "BasicSearch.json"
 }
+"""Mapping from string names to path of configuration file"""
 
 
 class PredefinedConfigurations:
+    """
+    Predefined configurations
 
-    data = PREDEFINED_CONFIGURATIONS
+    Attributes:
+      data: dict: Mapping from string names to path of configuration file
+
+    """
+
+    data: dict = PREDEFINED_CONFIGURATIONS
 
     @classmethod
-    def list(cls):
+    def list(cls) -> List[str]:
+        """Returns names of predefined configurations"""
         return list(PREDEFINED_CONFIGURATIONS.keys())

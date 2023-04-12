@@ -5,7 +5,17 @@ from typing import Optional
 
 
 class MatchPattern:
-    "Basic regex pattern"
+    """Basic regex pattern
+
+    Attributes:
+      concept: str: Concept which uses the pattern
+      pattern: str: String version of the pattern
+      regex: Compiled regex (regular expression object) for the pattern
+      flags: int: Flags to use in compiling the match pattern
+      source: str: Source configuration file for the match pattern
+      metadata: dict: Dictionary of auxillary information
+
+    """
 
     def __init__(
         self,
@@ -16,20 +26,47 @@ class MatchPattern:
         source: str = "",
         metadata: dict = {},
     ):
+        """
+        Create a regular expression pattern for a concept
+
+        Args:
+          concept: str: Concept which uses the pattern
+          pattern: Optional[str]: String version of the pattern (Default value = "")
+          regex: Compiled regex for the pattern. If None, will compile from pattern and flags (Default value = None)
+          flags: int: Flags to use when compiling the match pattern (Default value = 0)
+          source: str: Source configuration file for the match pattern (Default value = "")
+          metadata: dict: Dictionary of auxillary information (Default value = {})
+        """
         self.concept = concept
         self.pattern = pattern
-        self.regex = regex
+        if regex is not None:
+            self.regex = regex
+        else:
+            self.regex = re.compile(pattern, flags)
         self.flags = flags
         self.source = source
         self.metadata = metadata
 
     def __str__(self):
+        """ """
         return f'<{__class__.__name__} {self.concept} "{self.pattern[:20]}">'
 
-    def finditer(self, text, *args, **kwargs):
+    def finditer(self, text: str, *args, **kwargs):
+        """
+        Create an iterator of matches in the text
+
+        Args:
+          text: str: Text in which to search for the pattern
+          *args:  Passed to re.finditer
+          **kwargs:  Passed to re.finditer
+
+        Returns:
+          An interator that yields matches found in the text
+        """
         return self.regex.finditer(text, *args, **kwargs)
 
     def to_dict(self):
+        """Convert the MatchPattern object instance to a dict"""
         d = {}
         d["concept"] = self.concept
         if self.pattern:
@@ -44,8 +81,16 @@ class MatchPattern:
         return d
 
     @classmethod
-    def from_dict(cls, d):
-        """Create a MatchPattern from a dict"""
+    def from_dict(cls, d: dict):
+        """
+        Create a MatchPattern from a dict
+
+        Args:
+          d: dict: Dict form of the MatchPattern
+
+        Returns:
+          Instance of MatchPattern
+        """
         concept = d["concept"]
         pattern = d.get("pattern", "")
         flags = d.get("flags", 0)

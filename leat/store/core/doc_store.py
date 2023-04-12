@@ -1,20 +1,36 @@
 """Document Store. Isolates some file operations from the filesystem in which the files exist and from the readers that import the text from them."""
 
 from pathlib import Path
-from typing import Collection, Optional
+from typing import Collection, Optional, Union
 
 from . import Document, DocFile
 from ..reader import TextReader, PDFReader
 
 
 class DocStore:
-    """Document Store"""
+    """Document Store that encapsulates file operations and the readers that import text from them.
+
+    Attributes:
+      filesys: "FileSys":  Filesystem from which document files are to be read
+      filetypes: Collection[str] | None:  File types to be considered for reading
+
+    Example:
+      `ds = DocStore(LocalFileSys(filepath))`
+    """
 
     supported_file_types = {"text", "pdf"}
+    """File types supported by the document store"""
 
     def __init__(
         self, filesys: "FileSys" = None, filetypes: Optional[Collection[str]] = None
     ):
+        """
+        Creates a document store from a FileSys and optional collection of valid file types
+
+        Args:
+          filesys: FileSys: Filesystem from which document files are to be read (Default value = None)
+          filetypes: Collection[str] | None: File types to be considered for reading (Default value = None)
+        """
         self.filesys = filesys
         if filetypes is None:
             self.filetypes = self.__class__.supported_file_types.copy()
@@ -22,10 +38,20 @@ class DocStore:
             self.filetypes = self.__class__.supported_file_types.intersection(filetypes)
 
     def read_documents(self):
+        """Read and yield documents from the document store"""
         for file in self.filesys:
             yield self.read_document(file)
 
-    def read_document(self, file):
+    def read_document(self, file: Union[Path, str]) -> Optional[Document]:
+        """
+        Read a document from the specified file
+
+        Args:
+          file: Path | str: File path to read document from
+
+        Returns:
+          Document with file and text, if file could be read, else None
+        """
         text = None
         if isinstance(file, str):
             file = Path(file)
@@ -50,4 +76,5 @@ class DocStore:
                 return doc
 
     def __iter__(self):
+        """Generator from read documents"""
         return self.read_documents()

@@ -1,3 +1,5 @@
+"""Reads and extracts text from different kinds of files"""
+
 from .base_reader import BaseReader
 from .text_reader import TextReader
 
@@ -7,6 +9,8 @@ except ModuleNotFoundError:
     print("WARNING:", "PDF reading not available. Need to: pip install pdfminer.six")
 
     class PDFReader(BaseReader):
+        """Stub for PDF reader"""
+
         def __init__(self, *args):
             print(
                 "WARNING:",

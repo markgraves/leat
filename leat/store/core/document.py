@@ -5,14 +5,38 @@ from typing import Optional
 
 
 class Document:
-    "Basic document"
+    """
+    Basic document with name and text
+
+    Attributes:
+      name: str: Name of the document
+      text: Optional[str]: Text from the document
+      sha256: sha256 hash of the text (created in :meth:`to_dict`)
+    """
 
     def __init__(self, name: str, text: Optional[str] = ""):
+        """
+        Create a basic document with name and text
+
+        Args:
+          name: str: Name of the document
+          text: str | None: Text from the document (Default value = "")
+        """
         self.name = name
         self.text = text
         self.sha256 = None
 
-    def to_dict(self, include_text=False, use_hash=True):
+    def to_dict(self, include_text: bool = False, use_hash: bool = True) -> dict:
+        """
+        Create dict from Document
+
+        Args:
+          include_text: bool: Include text in dictionary (Default value = False)
+          use_hash: bool: Use hash for text (generate sha256 hash as needed) (Default value = True)
+
+        Returns:
+          dict: The created dictionary
+        """
         d = {}
         d["name"] = self.name
         if include_text:
@@ -34,14 +58,22 @@ class Document:
         return d
 
     @classmethod
-    def from_dict(cls, d):
-        """Create a Document from a dict"""
-        name = d.get("name", "")
-        text = d.get("text", "")
-        sha256 = d.get("sha256")
+    def from_dict(cls, dictionary: dict) -> "Document":
+        """
+        Create a Document from a dict
+
+        Args:
+          dictionary: dict: Dictionary created by :meth:`~to_dict`
+
+        Returns:
+          Document: Document created from the dict
+        """
+        name = dictionary.get("name", "")
+        text = dictionary.get("text", "")
+        sha256 = dictionary.get("sha256")
         doc = cls(name, text)
         doc.sha256 = sha256
-        text_length = d.get("text_length")
+        text_length = dictionary.get("text_length")
         if text_length is not None:
             if text and text_length != len(text):
                 print(

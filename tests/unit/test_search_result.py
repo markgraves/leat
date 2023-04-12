@@ -24,6 +24,15 @@ def test_bin_sliding_window_span():
     ) == [["x", "y", "w"]]
 
 
+def test_bin_sliding_window_span_max_sep():
+    assert DocResult.bin_sliding_window_span(
+        {1: {3: {"a": ["x", "y"]}}, 4: {7: {"a": ["w"]}}}, maxlength=3
+    ) == [["x", "y"], ["w"]]
+    assert DocResult.bin_sliding_window_span(
+        {1: {3: {"a": ["x", "y"]}}, 4: {7: {"a": ["w"]}}}
+    ) == [["x", "y", "w"]]
+
+
 ## sweep spans
 
 PARENS_RE = r"\(.*?\)"
@@ -33,11 +42,11 @@ MATCH_PATTERN = r"(?=(" + "|".join([PARENS_RE, BRACKETS_RE, BRACES_RE]) + r"))"
 
 
 class M:
-    def __init__(self, matched_text):
-        self.matched_text = matched_text
+    def __init__(self, match_text):
+        self.match_text = match_text
 
     def group(self, *args):
-        return self.matched_text
+        return self.match_text
 
 
 class MP:
@@ -48,16 +57,16 @@ class MP:
 
 
 class MR:
-    def __init__(self, pattern, matched_text, start, end, doc_text=""):
+    def __init__(self, pattern, match_text, start, end, doc_text=""):
         self.doc_text = doc_text
         self.pattern = pattern
-        self.matched_text = matched_text
-        self.match = M(matched_text)
+        self.match_text = match_text
+        self.match = M(match_text)
         self.start = start
         self.end = end
 
     def astext(self):
-        return self.matched_text
+        return self.match_text
 
     def __repr__(self):
         return f'MR("{self.pattern}", "{self.astext()}", {self.start}, {self.end})'
