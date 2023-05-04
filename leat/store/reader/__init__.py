@@ -28,7 +28,7 @@ except ModuleNotFoundError:
 try:
     from .docx_reader_docx2python import DocxReader
 except ModuleNotFoundError:
-     print("WARNING:", "PDF reading not available. Need to: pip install pdfminer.six")
+     print("WARNING:", "DOCX reading not available. Need to: pip install docx2python")
 
      class DocxReader(BaseReader):
         """Stub for DOCX reader"""
