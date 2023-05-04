@@ -8,6 +8,7 @@ FILE_EXTENSION_TYPES = {
     "pdf": "pdf",
     "text": "text",
     "txt": "text",
+    "docx": "docx",
 }
 """dict: Mapping from file extensions to file type"""
 
@@ -83,3 +84,15 @@ class DocFile:
         if self.valid_file():
             return open(self.filepath, mode=mode, *args)
         return None
+
+    def get_file(self):
+        """
+        Wrapper for getting filepath, checking if file is valid first
+
+        Returns:
+          File path if valid, else None
+        """
+        if self.valid_file():
+            return self.filepath
+        return None
+    
