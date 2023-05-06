@@ -14,6 +14,8 @@
 ## [0.6.0] - 2023-05-xx Mark Graves
 ### Added
 - Reader for Microsoft docx file (using docx2python)
+### Changed
+- In config data, if term is search sheet is all uppercase, match is now case sensitive
 
 
 ## [0.5.0] - 2023-04-12 Mark Graves

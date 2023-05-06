@@ -11,7 +11,7 @@ from . import BaseReader
 class DocxReader(BaseReader):
     """Reader for pdf file"""
 
-    def __init__(self, html:bool=False):
+    def __init__(self, html: bool = False):
         """
         Create a reader for DOCX files
 

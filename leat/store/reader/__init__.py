@@ -25,12 +25,13 @@ except ModuleNotFoundError:
             )
             return ""
 
+
 try:
     from .docx_reader_docx2python import DocxReader
 except ModuleNotFoundError:
-     print("WARNING:", "DOCX reading not available. Need to: pip install docx2python")
+    print("WARNING:", "DOCX reading not available. Need to: pip install docx2python")
 
-     class DocxReader(BaseReader):
+    class DocxReader(BaseReader):
         """Stub for DOCX reader"""
 
         def __init__(self, *args):
@@ -45,4 +46,3 @@ except ModuleNotFoundError:
                 "Cannot read DOCX without package docx2python for file:",
                 filename,
             )
-       

@@ -95,4 +95,3 @@ class DocFile:
         if self.valid_file():
             return self.filepath
         return None
-    
