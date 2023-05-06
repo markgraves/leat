@@ -9,6 +9,7 @@ FILE_EXTENSION_TYPES = {
     "text": "text",
     "txt": "text",
     "docx": "docx",
+    "pptx": "pptx",
 }
 """dict: Mapping from file extensions to file type"""
 

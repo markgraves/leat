@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Collection, Optional, Union
 
 from . import Document, DocFile
-from ..reader import TextReader, PDFReader, DocxReader
+from ..reader import TextReader, PDFReader, DOCXReader, PPTXReader
 
 
 class DocStore:
@@ -18,7 +18,7 @@ class DocStore:
       `ds = DocStore(LocalFileSys(filepath))`
     """
 
-    supported_file_types = {"text", "pdf", "docx"}
+    supported_file_types = {"text", "pdf", "docx", "pptx"}
     """File types supported by the document store"""
 
     def __init__(
@@ -66,7 +66,10 @@ class DocStore:
                         text = PDFReader().read(ifp)
                 elif filetype == "docx":
                     filepath = DocFile(file, filetype=filetype).get_file()
-                    text = DocxReader().read_file(filepath)
+                    text = DOCXReader().read_file(filepath)
+                elif filetype == "pptx":
+                    filepath = DocFile(file, filetype=filetype).get_file()
+                    text = PPTXReader().read_file(filepath)
                 else:
                     print("DEBUG:", "Unknown filetype", filetype, "for", file)
             except OSError:

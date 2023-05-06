@@ -8,8 +8,8 @@ from docx2python import docx2python
 from . import BaseReader
 
 
-class DocxReader(BaseReader):
-    """Reader for pdf file"""
+class DOCXReader(BaseReader):
+    """Reader for docx file"""
 
     def __init__(self, html: bool = False):
         """

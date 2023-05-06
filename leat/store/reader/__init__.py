@@ -27,11 +27,11 @@ except ModuleNotFoundError:
 
 
 try:
-    from .docx_reader_docx2python import DocxReader
+    from .docx_reader_docx2python import DOCXReader
 except ModuleNotFoundError:
     print("WARNING:", "DOCX reading not available. Need to: pip install docx2python")
 
-    class DocxReader(BaseReader):
+    class DOCXReader(BaseReader):
         """Stub for DOCX reader"""
 
         def __init__(self, *args):
@@ -44,5 +44,27 @@ except ModuleNotFoundError:
             print(
                 "WARNING:",
                 "Cannot read DOCX without package docx2python for file:",
+                filename,
+            )
+
+
+try:
+    from .pptx_reader_python_pptx import PPTXReader
+except ModuleNotFoundError:
+    print("WARNING:", "PPTX reading not available. Need to: pip install python-pptx")
+
+    class DOCXReader(BaseReader):
+        """Stub for PPTX reader"""
+
+        def __init__(self, *args):
+            print(
+                "WARNING:",
+                "PPTX reading not available. Need to: pip install python-pptx",
+            )
+
+        def read_file(self, filename, *args):
+            print(
+                "WARNING:",
+                "Cannot read PPTX without package python-pptx for file:",
                 filename,
             )
