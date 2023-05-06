@@ -18,7 +18,6 @@
 ### Changed
 - In config data, if term is search sheet is all uppercase, match is now case sensitive
 
-
 ## [0.5.0] - 2023-04-12 Mark Graves
 ### Added
 - Improved documentation of code
