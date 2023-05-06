@@ -11,6 +11,11 @@
 ## [Unreleased]
 - Items in development
 
+## [0.6.0] - 2023-05-xx Mark Graves
+### Added
+- Reader for Microsoft docx file (using docx2python)
+
+
 ## [0.5.0] - 2023-04-12 Mark Graves
 ### Added
 - Improved documentation of code
