@@ -130,22 +130,30 @@ def build_match_patterns_search(
     for concept, term_list in config_data.items():
         if concept.startswith("_"):
             continue
-        pattern_string = create_terms_pattern(
-            term_list, super_trie=super_trie, allow_wildcards=allow_wildcards
-        )
-        if pattern_string is None:
-            continue
-        # print("DEBUG:", "Building search pattern", pattern_string)
-        flags = re.IGNORECASE
-        match_pattern = MatchPattern(
-            concept,
-            pattern_string,
-            re.compile(pattern_string, flags),
-            flags,
-            source_name,
-            metadata,
-        )
-        result.append(match_pattern)
+        uppercase_terms = []
+        lowercase_terms = []
+        for term in term_list:
+            if term == term.upper():
+                uppercase_terms.append(term)
+            else:
+                lowercase_terms.append(term)
+        for flags in (0, re.IGNORECASE):  # re.NOFLAG # noflag in python 3.11
+            current_terms = lowercase_terms if flags else uppercase_terms
+            pattern_string = create_terms_pattern(
+                current_terms, super_trie=super_trie, allow_wildcards=allow_wildcards
+            )
+            if pattern_string is None:
+                continue
+            print("DEBUG:", "Building search pattern", pattern_string)
+            match_pattern = MatchPattern(
+                concept,
+                pattern_string,
+                re.compile(pattern_string, flags),
+                flags,
+                source_name,
+                metadata,
+            )
+            result.append(match_pattern)
     return result
 
 

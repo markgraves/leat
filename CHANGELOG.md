@@ -11,6 +11,13 @@
 ## [Unreleased]
 - Items in development
 
+## [0.6.0] - 2023-05-06 Mark Graves
+### Added
+- Reader for Microsoft docx file (using docx2python)
+- Reader for Microsoft pptx file (using python-pptx, which appears no longer supported). Known issue: some pptx files will not open.
+### Changed
+- In config data, if term is search sheet is all uppercase, match is now case sensitive
+
 ## [0.5.0] - 2023-04-12 Mark Graves
 ### Added
 - Improved documentation of code
