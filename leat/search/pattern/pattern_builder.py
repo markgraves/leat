@@ -75,7 +75,7 @@ def build_config_match_patterns(
             "_sheet_type", ConfigData.get_sheetname_type(sheet_name)
         )
         source = sheet_name if not source_name else str(source_name) + "::" + sheet_name
-        print("DEBUG:", "Processing", sheet_type, "sheet:", sheet_name)
+        #print("DEBUG:", "Processing", sheet_type, "sheet:", sheet_name)
         if sheet_type == "SEARCH":
             result.extend(
                 build_match_patterns_search(
@@ -144,7 +144,7 @@ def build_match_patterns_search(
             )
             if pattern_string is None:
                 continue
-            print("DEBUG:", "Building search pattern", pattern_string)
+            # print("DEBUG:", "Building search pattern", pattern_string)
             match_pattern = MatchPattern(
                 concept,
                 pattern_string,
