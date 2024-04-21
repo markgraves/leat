@@ -15,4 +15,8 @@ setup(
     license='LGPL-2.1',
     packages=find_packages(),
     include_package_data=True,
+    extras_require={
+        'dev': [
+            'pytest', 'black', 'myst-parser'
+        ]
 )
