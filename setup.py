@@ -15,6 +15,12 @@ setup(
     license='LGPL-2.1',
     packages=find_packages(),
     include_package_data=True,
+    install_requires={
+        'openpyxl',
+        'pandas>0.25',
+        'pdfminer.six',
+        'python-pptx',
+        }
     extras_require={
         'dev': [
             'pytest', 'black', 'myst-parser'
