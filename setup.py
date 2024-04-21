@@ -19,4 +19,5 @@ setup(
         'dev': [
             'pytest', 'black', 'myst-parser'
         ]
+    }
 )
