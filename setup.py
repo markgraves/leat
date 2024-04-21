@@ -20,7 +20,7 @@ setup(
         'pandas>0.25',
         'pdfminer.six',
         'python-pptx',
-        ]
+        ],
     extras_require={
         'dev': [
             'pytest', 'black', 'myst-parser'
