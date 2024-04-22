@@ -25,5 +25,8 @@ setup(
         'dev': [
             'pytest', 'black', 'myst-parser'
         ]
+    entry_points = {
+        'console_scripts': ['leat=leat.leat:cli'],
+    }        
     }
 )
