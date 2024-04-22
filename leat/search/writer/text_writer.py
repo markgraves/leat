@@ -35,7 +35,7 @@ class TextWriter(BaseWriter):
         Create a text writer to write text to a stream
 
         Args:
-           stream: Optional[IOBase]: Stream to write text, write string if None (Default value = None)
+          stream: Optional[IOBase]: Stream to write text, write string if None (Default value = None)
           scheme: SpanScheme | dict: Scheme to use in generating spans (Default value = None)
           start_pad: int | None: Number of characters to include before a match (Default value = None)
           end_pad: int | None: Number of characters to include after a match (Default value = None)
