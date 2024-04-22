@@ -21,6 +21,7 @@ def mix_hex_color_strings(
     Returns:
       RGB tuple of mixed colors
     """
+
     # See https://stackoverflow.com/questions/726549/algorithm-for-additive-color-mixing-for-rgb-values
     def hex_to_float(h: str, color_missing: Optional[str] = None):
         """

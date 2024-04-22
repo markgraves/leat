@@ -181,7 +181,7 @@ class DocResult(BaseResult):
                 mr1 = list(list(list(span_keyed_dict[i].values())[0].values())[0])[0]
                 try:
                     name = mr1.doc.name
-                except (AttributeError):
+                except AttributeError:
                     name = mr1
                 if current:
                     results.append(current)

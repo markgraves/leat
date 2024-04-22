@@ -7,10 +7,10 @@ all: # Prepare code for committing to git.
 
 # Automatically format python code. WARNING: unsaved changes may be lost.
 black:
-	python -m black --extend-exclude data leat tests leat/search/config/config_data.py leat.py
+	python -m black --extend-exclude data leat tests leat/search/config/config_data.py setup.py
 
 check-black:  
-	python -m black --extend-exclude data leat tests leat/search/config/config_data.py leat.py --check
+	python -m black --extend-exclude data leat tests leat/search/config/config_data.py setup.py --check
 
 # Automatically format python code. WARNING: unsaved changes may be lost.
 format: black
