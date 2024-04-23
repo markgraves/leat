@@ -225,9 +225,11 @@ def write_dataframe_html(
     else:
         return_string = False
     dataframe["doc_result_html"] = dataframe[doc_results_colname].apply(
-        lambda x: writer.get_doc_result_html(x)
-        if not isinstance(x, list)
-        else "\n".join(writer.get_doc_result_html(d) for d in x)
+        lambda x: (
+            writer.get_doc_result_html(x)
+            if not isinstance(x, list)
+            else "\n".join(writer.get_doc_result_html(d) for d in x)
+        )
     )
     write_doc_table(dataframe.drop(columns=[doc_results_colname]).reset_index(), stream)
     if return_string:
