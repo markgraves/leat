@@ -1,16 +1,16 @@
-#!/usr/bin/env python
+
+# Can run with: python -m leat.cli <cmd> <args>
 
 import argparse
 import os
 
-import leat
-from leat.search import Search
-from leat.search.config import ConfigData, PredefinedConfigurations
-from leat.search.pattern import PatternBuilder
-from leat.store.filesys import LocalFileSys
-from leat.store.core import DocStore
-from leat.search import Search
-from leat.search.writer import TextWriter, HTMLWriter
+from .search import Search
+from .search.config import ConfigData, PredefinedConfigurations
+from .search.pattern import PatternBuilder
+from .store.filesys import LocalFileSys
+from .store.core import DocStore
+from .search import Search
+from .search.writer import TextWriter, HTMLWriter
 
 CLI_COMMANDS = ["list", "search", "show"]
 
@@ -191,7 +191,7 @@ def get_filesys(args):
     return fs
 
 
-def cli():
+def main():
     "Command line interface for LEAT"
     args = init_args()
     if args.command == "search":
@@ -205,4 +205,4 @@ def cli():
 
 
 if __name__ == "__main__":
-    cli()
+    main()
