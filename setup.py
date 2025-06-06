@@ -16,6 +16,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
+        "docx2python",
         "openpyxl",
         "pandas>0.25",
         "pdfminer.six",
@@ -24,5 +25,8 @@ setup(
     extras_require={"dev": ["pytest", "black", "myst-parser"]},
     entry_points={
         "console_scripts": ["leat=leat.cli:mail"],
+    },
+    package_data={
+        "leat": ["data/*"],
     },
 )
