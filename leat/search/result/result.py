@@ -1,4 +1,4 @@
-""""Results of pattern matches"""
+"""Results of pattern matches"""
 
 from abc import ABC
 from collections import defaultdict, Counter
