@@ -13,7 +13,6 @@ The Lightweight Ethical Auditing Tool (LEAT) identifies ethical concepts in docu
 
 1. Create a virtual environment
 1. Pip install package -- `pip install git+https://github.com/markgraves/leat.git`
-1. Pip install requirements -- `pip install -r requirements.txt`
 
 ### Minimal installation on remote machines
 
