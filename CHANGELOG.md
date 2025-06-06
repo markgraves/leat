@@ -11,6 +11,11 @@
 ## [Unreleased]
 - Items in development
 
+## [0.8.0] - 2025-06-06 Mark Graves
+### Added
+- Added examples (remainder of issue #8)
+- Added configuration files from Journal of Responsible Technology article
+
 ## [0.7.0] - 2024-04-21 Mark Graves
 ### Added
 - Improvements to setup (issue #7)
