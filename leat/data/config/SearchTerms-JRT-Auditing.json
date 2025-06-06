@@ -1,0 +1,101 @@
+{
+    "Basic Search": {
+        "_sheet_type": "SEARCH",
+        "Performance Metrics": [
+            "precision",
+            "recall",
+            "sensitivity",
+            "specificity",
+            "F1",
+            "accuracy",
+            "evaluation metrics",
+            "performance metrics",
+            "eval metrics",
+            "false positive rate",
+            "false positive",
+            "false negative rate",
+            "false negative",
+            "FPR",
+            "FNR",
+            "confusion matrix",
+            "significant error",
+            "validation set",
+            "AUC"
+        ],
+        "Data Ethics": [
+            "bias",
+            "fairness",
+            "transparency",
+            "accountability",
+            "equit*",
+            "unfair",
+            "under-represented",
+            "underrepresented",
+            "inequal*",
+            "differential access",
+            "inequit*",
+            "marginalization",
+            "data subject?",
+            "data protection",
+            "model card?",
+            "disproportionate error?",
+            "under-represented"
+        ],
+        "Ethical Principles": [
+            "beneficience",
+            "nonmaleficence",
+            "do good",
+            "do no harm",
+            "non-maleficence",
+            "justice",
+            "respect for autonomy",
+            "patient autonomy",
+            "autonomy",
+            "explainability",
+            "ethical principles",
+            "XAI",
+            "explainable"
+        ],
+        "Protected Categories": [
+            "race",
+            "racial",
+            "gender",
+            "sexual orientation",
+            "disability",
+            "ethnic*",
+            "discriminatory",
+            "sensitive attribute",
+            "minority community",
+            "discrimination",
+            "people of color",
+            "neurodiversity",
+            "non-discrimination",
+            "diversity and inclusion",
+            "diversity & inclusion",
+            "gender classes"
+        ],
+        "Privacy": [
+            "loss of privacy",
+            "privacy",
+            "personally identifiable",
+            "confidential*",
+            "government identification",
+            "social security numbers",
+            "deidentification",
+            "de-identification",
+            "DEID"
+        ],
+        "Compliance": [
+            "institutional review board",
+            "IRB",
+            "ethical review",
+            "licensing term?",
+            "regulatory restriction?",
+            "regulations",
+            "intended use"
+        ]
+    },
+    "Patterns": {
+        "_sheet_type": "PATTERN"
+    }
+}
