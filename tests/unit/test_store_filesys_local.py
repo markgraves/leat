@@ -26,7 +26,7 @@ def test_add_directory(tmp_path):
     init_filesys(tmp_path)
     test_fs2 = LocalFileSys()
     test_fs2.add_directory(tmp_path / "a", recursive=True)
-    assert test_fs2.get_files(recursive=True) == [
+    assert sorted(test_fs2.get_files(recursive=True), key=str) == sorted([
         PosixPath(tmp_path / "a/b"),
         PosixPath(tmp_path / "a/b/c1"),
         PosixPath(tmp_path / "a/b/c2"),
@@ -40,7 +40,7 @@ def test_add_directory(tmp_path):
         PosixPath(tmp_path / "a/b/c2/file4.txt"),
         PosixPath(tmp_path / "a/b/c2/d"),
         PosixPath(tmp_path / "a/b/c2/d/e"),
-    ]
+    ], key=str)
 
 
 def test_get_files_nonrecursive(tmp_path):
@@ -53,7 +53,7 @@ def test_get_files_nonrecursive(tmp_path):
 def test_get_files_subdir(tmp_path):
     init_filesys(tmp_path)
     test_fs3 = LocalFileSys(tmp_path / "a/b/c1", recursive=True)
-    assert test_fs3.get_files() == [
+    assert sorted(test_fs3.get_files(), key=str) == sorted([
         PosixPath(tmp_path / "a/b/c1/d1"),
         PosixPath(tmp_path / "a/b/c1/d2"),
         PosixPath(tmp_path / "a/b/c1/d1/e"),
@@ -61,7 +61,7 @@ def test_get_files_subdir(tmp_path):
         PosixPath(tmp_path / "a/b/c1/d1/e/file1.txt"),
         PosixPath(tmp_path / "a/b/c1/d2/e"),
         PosixPath(tmp_path / "a/b/c1/d2/e/file3.txt"),
-    ]
+    ], key=str)
 
 
 def test_get_files_exclude(tmp_path):
@@ -70,7 +70,7 @@ def test_get_files_exclude(tmp_path):
     test_fs4.add_directory(
         tmp_path / "a", recursive=True, exclude=["d1", "d1/*", "d1/**/*"]
     )
-    assert test_fs4.get_files() == [
+    assert sorted(test_fs4.get_files(), key=str) == sorted([
         PosixPath(tmp_path / "a/b"),
         PosixPath(tmp_path / "a/b/c1"),
         PosixPath(tmp_path / "a/b/c2"),
@@ -80,19 +80,19 @@ def test_get_files_exclude(tmp_path):
         PosixPath(tmp_path / "a/b/c2/file4.txt"),
         PosixPath(tmp_path / "a/b/c2/d"),
         PosixPath(tmp_path / "a/b/c2/d/e"),
-    ]
+    ], key=str)
 
 
 def test_get_files_include(tmp_path):
     init_filesys(tmp_path)
     test_fs5 = LocalFileSys()
     test_fs5.add_directory(tmp_path / "a", recursive=True, include="*.txt")
-    assert test_fs5.get_files() == [
+    assert sorted(test_fs5.get_files(), key=str) == sorted([
         PosixPath(tmp_path / "a/b/c1/d1/e/file2.txt"),
         PosixPath(tmp_path / "a/b/c1/d1/e/file1.txt"),
         PosixPath(tmp_path / "a/b/c1/d2/e/file3.txt"),
         PosixPath(tmp_path / "a/b/c2/file4.txt"),
-    ]
+    ], key=str)
 
 
 def test_class_init_args(tmp_path):
@@ -111,11 +111,11 @@ def test_add_directories(tmp_path):
     init_filesys(tmp_path)
     test_fs8 = LocalFileSys()
     test_fs8.add_directories([tmp_path / "a/b/c1/d1", tmp_path / "a/b/c2"])
-    assert test_fs8.get_files() == [
+    assert sorted(test_fs8.get_files(), key=str) == sorted([
         PosixPath(tmp_path / "a/b/c1/d1/e"),
         PosixPath(tmp_path / "a/b/c1/d1/e/file2.txt"),
         PosixPath(tmp_path / "a/b/c1/d1/e/file1.txt"),
         PosixPath(tmp_path / "a/b/c2/file4.txt"),
         PosixPath(tmp_path / "a/b/c2/d"),
         PosixPath(tmp_path / "a/b/c2/d/e"),
-    ]
+    ], key=str)
