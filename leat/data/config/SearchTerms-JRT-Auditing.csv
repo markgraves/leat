@@ -1,0 +1,20 @@
+Performance Metrics,Data Ethics,Ethical Principles,Protected Categories,Privacy,Compliance
+precision,bias,beneficence,race,loss of privacy,institutional review board
+recall,fairness,nonmaleficence,racial,privacy,IRB
+sensitivity,transparency,do good,gender,personally identifiable,ethical review
+specificity,accountability,do no harm,sexual orientation,confidential*,licensing term?
+F1,equit*,non-maleficence,disability,government identification,regulatory restriction?
+accuracy,unfair,justice,ethnic*,social security numbers,regulations
+evaluation metrics,under-represented,respect for autonomy,discriminatory,deidentification,intended use
+performance metrics,underrepresented,patient autonomy,sensitive attribute,de-identification,
+eval metrics,inequal*,autonomy,minority community,DEID,
+false positive rate,differential access,explainability,discrimination,,
+false positive,inequit*,ethical principles,people of color,,
+false negative rate,marginalization,XAI,neurodiversity,,
+false negative,data subject?,explainable,non-discrimination,,
+FPR,data protection,,diversity and inclusion,,
+FNR,model card?,,diversity & inclusion,,
+confusion matrix,disproportionate error?,,gender classes,,
+significant error,under-represented,,,,
+validation set,,,,,
+AUC,,,,,

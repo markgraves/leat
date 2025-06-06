@@ -1,0 +1,70 @@
+{
+    "Clinical Search": {
+        "_sheet_type": "SEARCH",
+        "Transportation": [
+            "transportation",
+            "unable to drive"
+        ],
+        "Housing": [
+            "homeless",
+            "cost of rent",
+            "cost of mortgage",
+            "foreclosure",
+            "living situation",
+            "utilities",
+            "assistance with housing",
+            "housing lack",
+            "mold",
+            "unsafe neighborhood",
+            "sanitation"
+        ],
+        "Food & Nutrition": [
+            "groceries",
+            "nutritious food",
+            "nutrition",
+            "safe water",
+            "fresh fruit",
+            "vegetables",
+            "eating healthy"
+        ],
+        "Healthcare Access": [
+            "distance to",
+            "nearest hospital",
+            "nearest clinic",
+            "internet access"
+        ],
+        "Economic Stability": [
+            "unemployed",
+            "stable job"
+        ],
+        "Social Environment": [
+            "migrant",
+            "no household member renders care",
+            "lonely",
+            "no social support",
+            "no family support?",
+            "patient has no care provider"
+        ],
+        "Demographics": [
+            "race",
+            "gender",
+            "ethnicity",
+            "disability"
+        ],
+        "Clinical Factors": [
+            "diabetes",
+            "insulin",
+            "glucose",
+            "obesity"
+        ],
+        "Health Agency": [
+            "health agency",
+            "motivation",
+            "expectations",
+            "self-efficacy"
+        ]
+    },
+    "Patterns": {
+        "_sheet_type": "PATTERN"
+    }
+}

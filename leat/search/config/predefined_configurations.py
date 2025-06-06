@@ -1,10 +1,11 @@
 """Predefined Configurations"""
 
+import importlib.resources as resources
 from pathlib import Path
 from typing import List
 
 
-DEFAULT_CONFIG_DIRECTORY = Path(__file__).parent.parent.parent / "data" / "config"
+DEFAULT_CONFIG_DIRECTORY = resources.files("leat") / "data" / "config"
 """Base location for configuration files for predefined configurations"""
 
 PREDEFINED_CONFIGURATIONS = {

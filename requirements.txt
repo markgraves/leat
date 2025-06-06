@@ -1,4 +1,5 @@
-pdfminer.six
+docx2python
 openpyxl
 pandas>0.25
+pdfminer.six
 python-pptx
