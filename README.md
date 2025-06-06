@@ -27,3 +27,7 @@ The Lightweight Ethical Auditing Tool (LEAT) identifies ethical concepts in docu
 1. Pip install dev package -- `pip install "leat[dev] @ git+https://github.com/markgraves/leat.git"`
 
 Or, if installing from source -- `pip install -r requirements.txt -r requirements.dev.txt`
+
+## Getting Started
+- See examples in [leat/examples](leat/examples)
+- For command line tool, run `./leat.py --help` or `python leat.py --help`
