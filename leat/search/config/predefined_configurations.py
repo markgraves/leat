@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List
 
 
-DEFAULT_CONFIG_DIRECTORY = Path(__file__).parent.parent.parent / "data" / "config"
+DEFAULT_CONFIG_DIRECTORY = Path(__file__).parent.parent / "data" / "config"
 """Base location for configuration files for predefined configurations"""
 
 PREDEFINED_CONFIGURATIONS = {
